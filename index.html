@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>出勤簿</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 450px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 7px;
+      font-weight: bold;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 18px;
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #message {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>出勤簿</h1>
+
+    <label>社員名</label>
+   <select id="employee">
+  <option value="">読み込み中...</option>
+</select>
+
+  <label>勤務区分</label>
+    <select id="workType">
+      <option>通常勤務</option>
+      <option>夜勤</option>
+      <option>休日出勤</option>
+    </select>
+   
+   <label>現場名</label>
+<select id="site">
+  <option value="">読み込み中...</option>
+</select>
+    <button onclick="checkIn()">出勤する</button>
+
+    <div id="message"></div>
+
+  </div>
+
+ <script>
+  const employeeSelect = document.getElementById("employee");
+  const workTypeSelect = document.getElementById("workType");
+  const siteSelect = document.getElementById("site");
+
+  // この端末に保存されている前回の選択内容を読み込む
+  const savedEmployee = localStorage.getItem("employeeName");
+  const savedWorkType = localStorage.getItem("workType");
+  const savedSite = localStorage.getItem("site");
+  const webAppUrl = "https://script.google.com/macros/s/AKfycbxjvNYi0z_OMa-qCXwCydP1e9H86LtC9hTW-Qnpp4yfTr6FyFao3CBL1nEnngwr5TPS/exec";
+
+async function loadMasterData() {
+  try {
+    const response = await fetch(webAppUrl);
+    const data = await response.json();
+
+    // 社員一覧
+    employeeSelect.innerHTML =
+      '<option value="">選択してください</option>';
+
+    data.employees.forEach(function(employee) {
+      const option = document.createElement("option");
+      option.value = employee;
+      option.textContent = employee;
+      employeeSelect.appendChild(option);
+    });
+
+    // 現場一覧
+    siteSelect.innerHTML =
+      '<option value="">選択してください</option>';
+
+    data.sites.forEach(function(site) {
+      const option = document.createElement("option");
+      option.value = site;
+      option.textContent = site;
+      siteSelect.appendChild(option);
+    });
+
+    // 前回選択した社員・現場を復元
+    const savedEmployee = localStorage.getItem("employeeName");
+    const savedSite = localStorage.getItem("site");
+
+    if (savedEmployee) {
+      employeeSelect.value = savedEmployee;
+    }
+
+    if (savedSite) {
+      siteSelect.value = savedSite;
+    }
+
+  } catch (error) {
+    employeeSelect.innerHTML =
+      '<option value="">社員一覧を取得できませんでした</option>';
+
+    siteSelect.innerHTML =
+      '<option value="">現場一覧を取得できませんでした</option>';
+
+    console.error(error);
+  }
+}
+
+loadMasterData();
+
+  // 前回の内容を画面に反映
+  if (savedEmployee) {
+    employeeSelect.value = savedEmployee;
+  }
+
+  if (savedWorkType) {
+    workTypeSelect.value = savedWorkType;
+  }
+
+  if (savedSite) {
+    siteSelect.value = savedSite;
+  }
+
+  // 社員名を変更したら保存
+  employeeSelect.addEventListener("change", function () {
+    localStorage.setItem("employeeName", employeeSelect.value);
+  });
+
+  // 勤務区分を変更したら保存
+  workTypeSelect.addEventListener("change", function () {
+    localStorage.setItem("workType", workTypeSelect.value);
+  });
+
+  // 現場名を変更したら保存
+  siteSelect.addEventListener("change", function () {
+    localStorage.setItem("site", siteSelect.value);
+  });
+
+  async function checkIn() {
+  const employee = employeeSelect.value;
+  const workType = workTypeSelect.value;
+  const site = siteSelect.value;
+
+  if (!employee) {
+    alert("社員名を選択してください");
+    return;
+  }
+
+  if (!site) {
+    alert("現場名を選択してください");
+    return;
+  }
+
+  // 前回の選択内容を保存
+  localStorage.setItem("employeeName", employee);
+  localStorage.setItem("workType", workType);
+  localStorage.setItem("site", site);
+
+  const url = "https://script.google.com/macros/s/AKfycbxjvNYi0z_OMa-qCXwCydP1e9H86LtC9hTW-Qnpp4yfTr6FyFao3CBL1nEnngwr5TPS/exec";
+
+  const button = document.querySelector("button");
+  const message = document.getElementById("message");
+
+  button.disabled = true;
+  button.textContent = "送信中...";
+  message.textContent = "";
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        employee: employee,
+        workType: workType,
+        site: site
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.result === "duplicate") {
+      message.textContent =
+        "⚠ 本日はすでに「" + workType + "」で出勤登録されています";
+      return;
+    }
+
+    if (result.result === "success") {
+      const now = new Date();
+      const time = now.toLocaleTimeString("ja-JP");
+
+      message.textContent =
+        "✓ " + employee + "　出勤しました　" + time;
+    } else {
+      throw new Error("登録結果が不明です");
+    }
+
+  } catch (error) {
+    message.textContent = "⚠ 出勤記録を送信できませんでした";
+    console.error(error);
+
+  } finally {
+    button.disabled = false;
+    button.textContent = "出勤する";
+  }
+}
+</script>
+
+</body>
+</html>
