@@ -81,7 +81,37 @@
 </select>
     <button onclick="checkIn()">出勤する</button>
 
-    <div id="message"></div>
+<button
+  type="button"
+  id="lateButton"
+  onclick="showLateForm()"
+  style="
+    margin-top: 15px;
+    padding: 12px;
+    font-size: 16px;
+    background: white;
+    border: 1px solid #999;
+  "
+>
+  出勤を忘れた方はこちら
+</button>
+
+<div id="lateForm" style="display:none;">
+
+  <label>出勤日</label>
+  <input type="date" id="workDate">
+
+  <button
+    type="button"
+    onclick="submitLateCheckIn()"
+    style="margin-top:20px;"
+  >
+    後日申請する
+  </button>
+
+</div>
+
+<div id="message"></div>
 
   </div>
 
