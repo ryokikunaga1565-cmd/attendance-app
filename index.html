@@ -272,6 +272,79 @@ loadMasterData();
     button.textContent = "出勤する";
   }
 }
+function showLateForm() {
+  const lateForm = document.getElementById("lateForm");
+  const workDate = document.getElementById("workDate");
+
+  // 今日の日付
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  // 今日より未来の日付は選べない
+  workDate.max = `${yyyy}-${mm}-${dd}`;
+
+  // 初回は今日を表示
+  if (!workDate.value) {
+    workDate.value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  lateForm.style.display =
+    lateForm.style.display === "none" ? "block" : "none";
+}
+async function submitLateCheckIn() {
+  const employee = employeeSelect.value;
+  const workType = workTypeSelect.value;
+  const site = siteSelect.value;
+  const workDate = document.getElementById("workDate").value;
+  const message = document.getElementById("message");
+
+  if (!employee) {
+    alert("社員名を選択してください");
+    return;
+  }
+
+  if (!site) {
+    alert("現場名を選択してください");
+    return;
+  }
+
+  if (!workDate) {
+    alert("出勤日を選択してください");
+    return;
+  }
+
+  try {
+    const response = await fetch(webAppUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        employee: employee,
+        workType: workType,
+        site: site,
+        workDate: workDate,
+        action: "lateCheckIn"
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.result === "duplicate") {
+      message.textContent = "⚠ この日はすでに同じ勤務区分で登録されています";
+      return;
+    }
+
+    if (result.result === "success") {
+      message.textContent = "✓ 後日申請しました";
+    } else {
+      throw new Error("登録結果が不明です");
+    }
+
+  } catch (error) {
+    message.textContent = "⚠ 後日申請を送信できませんでした";
+    console.error(error);
+  }
+}
 </script>
 
 </body>
