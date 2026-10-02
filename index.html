@@ -349,6 +349,9 @@ async function submitLateCheckIn() {
   const site = siteSelect.value;
   const workDate = document.getElementById("workDate").value;
   const message = document.getElementById("message");
+  const lateSubmitButton = document.querySelector(
+  '#lateForm button[onclick="submitLateCheckIn()"]'
+);
   message.textContent = "";
 message.style.background = "transparent";
 message.style.color = "";
@@ -376,6 +379,8 @@ if (selectedDate >= today) {
   alert("前日までの日付を選択してください");
   return;
 }
+lateSubmitButton.disabled = true;
+lateSubmitButton.textContent = "送信中...";
   try {
     const response = await fetch(webAppUrl, {
       method: "POST",
@@ -406,11 +411,15 @@ message.style.color = "#2e7d32";
     }
 
   } catch (error) {
-    message.textContent = "⚠ 後日申請を送信できませんでした";
-    message.style.background = "#ffebee";
-message.style.color = "#c62828";
-    console.error(error);
-  }
+  message.textContent = "⚠ 後日申請を送信できませんでした";
+  message.style.background = "#ffebee";
+  message.style.color = "#c62828";
+  console.error(error);
+
+} finally {
+  lateSubmitButton.disabled = false;
+  lateSubmitButton.textContent = "後日申請する";
+}
 }
 function changeEmployee() {
   const password = prompt("社員設定パスワードを入力してください");
