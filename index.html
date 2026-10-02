@@ -118,12 +118,13 @@
   <input type="date" id="workDate">
 
   <button
-    type="button"
-    onclick="submitLateCheckIn()"
-    style="margin-top:20px;"
-  >
-    後日申請する
-  </button>
+  type="button"
+  id="lateSubmitButton"
+  onclick="submitLateCheckIn()"
+  style="margin-top:20px;"
+>
+  後日申請する
+</button>
 
 </div>
 
@@ -349,9 +350,7 @@ async function submitLateCheckIn() {
   const site = siteSelect.value;
   const workDate = document.getElementById("workDate").value;
   const message = document.getElementById("message");
-  const lateSubmitButton = document.querySelector(
-  '#lateForm button[onclick="submitLateCheckIn()"]'
-);
+  const lateSubmitButton = document.getElementById("lateSubmitButton");
   message.textContent = "";
 message.style.background = "transparent";
 message.style.color = "";
