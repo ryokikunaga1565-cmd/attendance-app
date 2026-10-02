@@ -308,13 +308,22 @@ function showLateForm() {
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
 
-  // 今日より未来の日付は選べない
-  workDate.max = `${yyyy}-${mm}-${dd}`;
+  // 昨日の日付を作る
+const yesterday = new Date(today);
+yesterday.setDate(today.getDate() - 1);
 
-  // 初回は今日を表示
-  if (!workDate.value) {
-    workDate.value = `${yyyy}-${mm}-${dd}`;
-  }
+const yyyyy = yesterday.getFullYear();
+const ymm = String(yesterday.getMonth() + 1).padStart(2, "0");
+const ydd = String(yesterday.getDate()).padStart(2, "0");
+const yesterdayString = `${yyyyy}-${ymm}-${ydd}`;
+
+// 「前日まで」なので今日の日付は選べない
+workDate.max = yesterdayString;
+
+// 初回は昨日を表示
+if (!workDate.value) {
+  workDate.value = yesterdayString;
+}
 
   lateForm.style.display =
     lateForm.style.display === "none" ? "block" : "none";
@@ -372,11 +381,18 @@ async function submitLateCheckIn() {
   }
 }
 function changeEmployee() {
-  const currentEmployee = localStorage.getItem("employeeName");
+  const password = prompt("社員設定パスワードを入力してください");
 
-  if (!confirm("社員名の設定を変更しますか？")) {
+  if (password === null) {
     return;
   }
+
+  if (password !== "1234") {
+    alert("パスワードが違います");
+    return;
+  }
+
+  const currentEmployee = localStorage.getItem("employeeName");
 
   document.getElementById("employeeDisplay").style.display = "none";
   employeeSelect.style.display = "block";
