@@ -349,7 +349,15 @@ async function submitLateCheckIn() {
     alert("出勤日を選択してください");
     return;
   }
+const today = new Date();
+today.setHours(0, 0, 0, 0);
 
+const selectedDate = new Date(workDate + "T00:00:00");
+
+if (selectedDate >= today) {
+  alert("前日までの日付を選択してください");
+  return;
+}
   try {
     const response = await fetch(webAppUrl, {
       method: "POST",
