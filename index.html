@@ -381,7 +381,11 @@ if (selectedDate >= today) {
 }
 lateSubmitButton.disabled = true;
 lateSubmitButton.textContent = "送信中...";
-  try {
+
+// 「送信中...」を画面に描画させる
+await new Promise(resolve => setTimeout(resolve, 500));
+
+try {
     const response = await fetch(webAppUrl, {
       method: "POST",
       body: JSON.stringify({
