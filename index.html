@@ -74,7 +74,12 @@
     <h1>出勤簿</h1>
 
     <label>社員名</label>
-   <select id="employee">
+
+<div id="employeeDisplay" style="display:none;">
+  <div id="employeeName" style="padding:14px;font-size:18px;font-weight:bold;"></div>
+</div>
+
+<select id="employee">
   <option value="">読み込み中...</option>
 </select>
 
@@ -97,7 +102,7 @@
   onclick="showLateForm()"
   style="margin-top:18px;padding:12px;font-size:15px;background:white;color:#555;border:1px solid #bbb;"
 >
-  出勤を忘れた方はこちら
+  前日までの出勤入力
 </button>
 
 <div id="lateForm" style="display:none;">
@@ -116,6 +121,12 @@
 </div>
 
 <div id="message"></div>
+<div
+  onclick="changeEmployee()"
+  style="margin-top:35px;text-align:center;font-size:11px;color:#bbb;cursor:pointer;"
+>
+  社員設定
+</div>
 
   </div>
 
@@ -162,7 +173,12 @@ async function loadMasterData() {
     const savedSite = localStorage.getItem("site");
 
     if (savedEmployee) {
-      employeeSelect.value = savedEmployee;
+  employeeSelect.value = savedEmployee;
+
+  document.getElementById("employeeName").textContent = savedEmployee;
+  document.getElementById("employeeDisplay").style.display = "block";
+  employeeSelect.style.display = "none";
+}
     }
 
     if (savedSite) {
@@ -183,9 +199,8 @@ async function loadMasterData() {
 loadMasterData();
 
   // 前回の内容を画面に反映
-  if (savedEmployee) {
-    employeeSelect.value = savedEmployee;
-  }
+  
+  
 
   if (savedWorkType) {
     workTypeSelect.value = savedWorkType;
@@ -197,8 +212,16 @@ loadMasterData();
 
   // 社員名を変更したら保存
   employeeSelect.addEventListener("change", function () {
-    localStorage.setItem("employeeName", employeeSelect.value);
-  });
+  const employee = employeeSelect.value;
+
+  if (!employee) return;
+
+  localStorage.setItem("employeeName", employee);
+
+  document.getElementById("employeeName").textContent = employee;
+  document.getElementById("employeeDisplay").style.display = "block";
+  employeeSelect.style.display = "none";
+});
 
   // 勤務区分を変更したら保存
   workTypeSelect.addEventListener("change", function () {
@@ -348,6 +371,17 @@ async function submitLateCheckIn() {
     message.textContent = "⚠ 後日申請を送信できませんでした";
     console.error(error);
   }
+}
+function changeEmployee() {
+  const currentEmployee = localStorage.getItem("employeeName");
+
+  if (!confirm("社員名の設定を変更しますか？")) {
+    return;
+  }
+
+  document.getElementById("employeeDisplay").style.display = "none";
+  employeeSelect.style.display = "block";
+  employeeSelect.value = currentEmployee || "";
 }
 </script>
 
