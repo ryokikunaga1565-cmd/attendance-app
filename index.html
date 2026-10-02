@@ -179,11 +179,10 @@ async function loadMasterData() {
   document.getElementById("employeeDisplay").style.display = "block";
   employeeSelect.style.display = "none";
 }
-    }
 
-    if (savedSite) {
-      siteSelect.value = savedSite;
-    }
+if (savedSite) {
+  siteSelect.value = savedSite;
+}
 
   } catch (error) {
     employeeSelect.innerHTML =
