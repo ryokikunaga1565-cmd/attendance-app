@@ -60,10 +60,14 @@
 }
 
     #message {
-      text-align: center;
-      margin-top: 20px;
-      font-weight: bold;
-    }
+  text-align: center;
+  margin-top: 20px;
+  padding: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 8px;
+  min-height: 20px;
+}
   </style>
 </head>
 
@@ -263,6 +267,8 @@ loadMasterData();
   button.disabled = true;
   button.textContent = "送信中...";
   message.textContent = "";
+  message.style.background = "transparent";
+message.style.color = "";
 
   try {
     const response = await fetch(url, {
@@ -279,6 +285,8 @@ loadMasterData();
     if (result.result === "duplicate") {
       message.textContent =
         "⚠ 本日はすでに「" + workType + "」で出勤登録されています";
+        message.style.background = "#ffebee";
+message.style.color = "#c62828";
       return;
     }
 
@@ -288,12 +296,16 @@ loadMasterData();
 
       message.textContent =
         "✓ " + employee + "　出勤しました　" + time;
+        message.style.background = "#e8f5e9";
+message.style.color = "#2e7d32";
     } else {
       throw new Error("登録結果が不明です");
     }
 
   } catch (error) {
     message.textContent = "⚠ 出勤記録を送信できませんでした";
+    message.style.background = "#ffebee";
+message.style.color = "#c62828";
     console.error(error);
 
   } finally {
@@ -337,6 +349,9 @@ async function submitLateCheckIn() {
   const site = siteSelect.value;
   const workDate = document.getElementById("workDate").value;
   const message = document.getElementById("message");
+  message.textContent = "";
+message.style.background = "transparent";
+message.style.color = "";
 
   if (!employee) {
     alert("社員名を選択してください");
@@ -377,17 +392,23 @@ if (selectedDate >= today) {
 
     if (result.result === "duplicate") {
       message.textContent = "⚠ この日はすでに同じ勤務区分で登録されています";
+      message.style.background = "#ffebee";
+message.style.color = "#c62828";
       return;
     }
 
     if (result.result === "success") {
       message.textContent = "✓ 後日申請しました";
+      message.style.background = "#e8f5e9";
+message.style.color = "#2e7d32";
     } else {
       throw new Error("登録結果が不明です");
     }
 
   } catch (error) {
     message.textContent = "⚠ 後日申請を送信できませんでした";
+    message.style.background = "#ffebee";
+message.style.color = "#c62828";
     console.error(error);
   }
 }
