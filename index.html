@@ -211,6 +211,13 @@ if (savedSite) {
 }
 
 loadMasterData();
+// アプリがバックグラウンドから戻ったら
+// 最新の社員・現場マスターを再取得する
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "visible") {
+    loadMasterData();
+  }
+});
 
   // 前回の内容を画面に反映
   
