@@ -1461,30 +1461,43 @@ async function loadHistory() {
     }
 
     const table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.borderCollapse = "collapse";
+table.style.width = "100%";
+table.style.borderCollapse = "collapse";
+table.style.marginTop = "10px";
 
-    const header = table.insertRow();
-    ["日付", "現場名", "区分"].forEach(text => {
-      const th = document.createElement("th");
-      th.textContent = text;
-      th.style.padding = "8px 4px";
-      th.style.borderBottom = "2px solid #ddd";
-      header.appendChild(th);
-    });
+// 見出し
+const header = table.insertRow();
 
-    data.history.forEach(item => {
-      const row = table.insertRow();
+["日付", "現場名"].forEach(text => {
+  const th = document.createElement("th");
+  th.textContent = text;
+  th.style.border = "1px solid #aaa";
+  th.style.padding = "8px";
+  th.style.background = "#f0f0f0";
+  header.appendChild(th);
+});
 
-      [item.date, item.site, item.workType].forEach(value => {
-        const td = row.insertCell();
-        td.textContent = value || "";
-        td.style.padding = "8px 4px";
-        td.style.borderBottom = "1px solid #eee";
-      });
-    });
+// 出勤履歴
+data.history.forEach(item => {
+  const row = table.insertRow();
 
-    list.appendChild(table);
+  const dateCell = row.insertCell();
+  dateCell.textContent = item.date;
+  dateCell.style.border = "1px solid #aaa";
+  dateCell.style.padding = "8px";
+  dateCell.style.whiteSpace = "nowrap";
+
+  const siteCell = row.insertCell();
+  siteCell.textContent = item.site || "";
+  siteCell.style.border = "1px solid #aaa";
+  siteCell.style.padding = "8px";
+
+  // 夜勤は赤字、通常勤務は黒字
+  siteCell.style.color =
+    item.workType === "夜勤" ? "red" : "black";
+});
+
+list.appendChild(table);
 
   } catch (error) {
     list.textContent = "履歴を取得できませんでした";
