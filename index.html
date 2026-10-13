@@ -117,6 +117,9 @@
 >
   前日までの出勤入力
 </button>
+<button type="button" onclick="refreshApp()">
+  🔄 更新
+</button>
 
 <div id="lateForm" style="display:none;">
 
@@ -451,6 +454,10 @@ function changeEmployee() {
   document.getElementById("employeeDisplay").style.display = "none";
   employeeSelect.style.display = "block";
   employeeSelect.value = currentEmployee || "";
+}
+// アプリ全体を再読み込み
+function refreshApp() {
+  window.location.reload();
 }
 </script>
 
