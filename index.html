@@ -1432,7 +1432,7 @@ function updateInputMode() {
 }
 async function loadHistory() {
   const list = document.getElementById("historyList");
-  const employee = employeesSelect.value;
+  const employee = document.getElementById("employee").value;
 
   if (!employee) {
     list.textContent = "社員を選択してください";
