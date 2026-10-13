@@ -87,7 +87,7 @@ button{cursor:pointer}
 
 /* 前日入力・まとめて入力を横並びにする */
 .input-mode-buttons{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:12px}
-#lateButton,#batchButton{width:100%;min-width:0;min-height:64px;margin-top:0;padding:10px 5px;font-size:clamp(11px,3.2vw,14px);line-height:1.35;white-space:normal}
+#lateButton,#batchButton{width:100%;min-width:0;min-height:76px;margin-top:0;padding:10px 5px;font-size:clamp(15px,4.2vw,18px);line-height:1.35;white-space:pre-line;text-align:center;font-weight:850}
 #lateButton:disabled,#batchButton:disabled{opacity:.55;cursor:not-allowed}
 </style></head><body>
 
@@ -102,8 +102,10 @@ button{cursor:pointer}
 <button id="checkInButton" type="button" onclick="checkIn()">✓ 出勤する</button>
 
 <div class="input-mode-buttons">
-<button id="lateButton" type="button" onclick="showLateForm()">前日までの出勤入力　⌄</button>
-<button id="batchButton" type="button" onclick="toggleBatchForm()">まとめて出勤入力　⌄</button>
+<button id="lateButton" type="button" onclick="showLateForm()">前日までの
+出勤入力 ⌄</button>
+<button id="batchButton" type="button" onclick="toggleBatchForm()">まとめて
+出勤入力 ⌄</button>
 </div>
 
 <div id="lateForm" style="display:none"><label for="workDate">出勤日</label><input type="date" id="workDate"><button id="lateSubmitButton" type="button" onclick="submitLateCheckIn()">後日申請する</button></div>
@@ -956,7 +958,7 @@ if (!workDate.value) {
 
     document.getElementById('batchForm').style.display='none';
 
-    document.getElementById('batchButton').textContent='まとめて出勤入力　⌄';
+    document.getElementById('batchButton').textContent='まとめて\n出勤入力 ⌄';
 
   }
 
@@ -970,9 +972,9 @@ if (!workDate.value) {
 
   document.getElementById("lateButton").textContent = opening
 
-    ? "前日までの出勤入力　⌃"
+    ? "前日までの\n出勤入力 ⌃"
 
-    : "前日までの出勤入力　⌄";
+    : "前日までの\n出勤入力 ⌄";
 
 
 
@@ -1420,7 +1422,7 @@ function toggleBatchForm() {
 
     document.getElementById('lateForm').style.display = 'none';
 
-    document.getElementById('lateButton').textContent = '前日までの出勤入力　⌄';
+    document.getElementById('lateButton').textContent = '前日までの\n出勤入力 ⌄';
 
     const month = document.getElementById('batchMonth');
 
@@ -1432,7 +1434,7 @@ function toggleBatchForm() {
 
   }
 
-  document.getElementById('batchButton').textContent = opening ? 'まとめて出勤入力　⌃' : 'まとめて出勤入力　⌄';
+  document.getElementById('batchButton').textContent = opening ? 'まとめて\n出勤入力 ⌃' : 'まとめて\n出勤入力 ⌄';
 
   updateInputMode();
 
