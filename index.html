@@ -134,7 +134,15 @@ button{cursor:pointer}
 </button>
 
 <div id="historyForm" style="display:none;">
-  <div id="historyList"></div>
+  <div id="historyMonthNav" style="display:flex;align-items:center;justify-content:space-between;margin:12px 0;">
+  <button type="button" onclick="changeHistoryMonth(-1)">◀</button>
+
+  <strong id="historyMonthTitle">令和8年10月分</strong>
+
+  <button type="button" onclick="changeHistoryMonth(1)">▶</button>
+</div>
+
+<div id="historyList"></div>
 </div>
 <div id="message" role="status" aria-live="polite"></div><button class="settings" type="button" onclick="changeEmployee()">社員設定を変更</button>
 
@@ -1430,6 +1438,31 @@ function updateInputMode() {
   document.getElementById('batchButton').disabled = batchSending;
 
 }
+// 履歴の表示月（21日締め）
+const todayForHistory = new Date();
+let historyMonth = new Date(
+  todayForHistory.getFullYear(),
+  todayForHistory.getMonth() +
+    (todayForHistory.getDate() >= 21 ? 1 : 0),
+  1
+);
+
+// 表示月を変更
+function changeHistoryMonth(offset) {
+  historyMonth.setMonth(historyMonth.getMonth() + offset);
+  updateHistoryMonthTitle();
+  loadHistory();
+}
+
+// 「令和8年10月分」などの表示
+function updateHistoryMonthTitle() {
+  const year = historyMonth.getFullYear();
+  const month = historyMonth.getMonth() + 1;
+  const reiwa = year - 2018;
+
+  document.getElementById("historyMonthTitle").textContent =
+    `令和${reiwa}年${month}月分`;
+}
 async function loadHistory() {
   const list = document.getElementById("historyList");
   const employee = document.getElementById("employee").value;
@@ -1455,11 +1488,7 @@ async function loadHistory() {
 
     list.innerHTML = "";
 
-    if (!data.history || data.history.length === 0) {
-      list.textContent = "出勤履歴はありません";
-      return;
-    }
-
+data.history = data.history || [];
     const table = document.createElement("table");
 table.style.width = "100%";
 table.style.borderCollapse = "collapse";
@@ -1468,7 +1497,7 @@ table.style.marginTop = "10px";
 // 見出し
 const header = table.insertRow();
 
-["日付", "現場名"].forEach(text => {
+["日付", "曜", "現場名"].forEach(text => {
   const th = document.createElement("th");
   th.textContent = text;
   th.style.border = "1px solid #aaa";
@@ -1476,16 +1505,83 @@ const header = table.insertRow();
   th.style.background = "#f0f0f0";
   header.appendChild(th);
 });
+// 選択した締め月の期間
+const startDate = new Date(
+  historyMonth.getFullYear(),
+  historyMonth.getMonth() - 1,
+  21
+);
 
+const endDate = new Date(
+  historyMonth.getFullYear(),
+  historyMonth.getMonth(),
+  20
+);
+
+// 締め期間内の履歴だけ表示
+data.history = data.history.filter(item => {
+  const [year, month, day] = item.date.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+
+  return date >= startDate && date <= endDate;
+});
 // 出勤履歴
-data.history.forEach(item => {
+// 21日〜20日までの日付をすべて作成
+const calendarHistory = [];
+
+for (
+  let date = new Date(startDate);
+  date <= endDate;
+  date.setDate(date.getDate() + 1)
+) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const dateKey = `${year}-${month}-${day}`;
+
+  const records = data.history.filter(item => item.date === dateKey);
+
+  if (records.length > 0) {
+    calendarHistory.push(...records);
+  } else {
+    calendarHistory.push({
+      date: dateKey,
+      site: "",
+      workType: ""
+    });
+  }
+}
+
+// 日付順に表示
+calendarHistory.forEach(item => {
   const row = table.insertRow();
 
-  const dateCell = row.insertCell();
-  dateCell.textContent = item.date;
-  dateCell.style.border = "1px solid #aaa";
-  dateCell.style.padding = "8px";
-  dateCell.style.whiteSpace = "nowrap";
+  // 日付を「9月21日」の形式にする
+const [year, month, day] = item.date.split("-").map(Number);
+const date = new Date(year, month - 1, day);
+
+const dateCell = row.insertCell();
+dateCell.textContent = `${month}月${day}日`;
+dateCell.style.border = "1px solid #aaa";
+dateCell.style.padding = "8px 4px";
+dateCell.style.whiteSpace = "nowrap";
+
+// 曜日を表示する
+const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+const weekday = date.getDay();
+
+const weekdayCell = row.insertCell();
+weekdayCell.textContent = weekdays[weekday];
+weekdayCell.style.border = "1px solid #aaa";
+weekdayCell.style.padding = "8px 4px";
+weekdayCell.style.textAlign = "center";
+
+// 日曜日は赤、土曜日は青
+if (weekday === 0) {
+  weekdayCell.style.color = "red";
+} else if (weekday === 6) {
+  weekdayCell.style.color = "blue";
+}
 
   const siteCell = row.insertCell();
   siteCell.textContent = item.site || "";
@@ -1511,6 +1607,7 @@ function toggleHistory() {
   if (form.style.display === "none") {
   form.style.display = "block";
   button.textContent = "自分の出勤履歴を見る ▲";
+  updateHistoryMonthTitle();
   loadHistory();
   } else {
     form.style.display = "none";
