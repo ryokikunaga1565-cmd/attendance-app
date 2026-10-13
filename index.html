@@ -50,7 +50,7 @@ button{cursor:pointer}
 <button id="lateButton" type="button" onclick="showLateForm()">前日までの出勤入力　⌄</button>
 <div id="lateForm" style="display:none"><label for="workDate">出勤日</label><input type="date" id="workDate"><button id="lateSubmitButton" type="button" onclick="submitLateCheckIn()">後日申請する</button></div>
 <button id="batchButton" type="button" onclick="toggleBatchForm()">まとめて出勤入力　⌄</button>
-<div id="batchForm" style="display:none"><label for="batchMonth">対象月</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
+<div id="batchForm" style="display:none"><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
 <div id="message" role="status" aria-live="polite"></div><button class="settings" type="button" onclick="changeEmployee()">社員設定を変更</button>
 </main></div>
 <script>
@@ -654,6 +654,18 @@ function localDayString(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function batchToday() { return localDayString(new Date()); }
+function batchPeriod(month) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return null;
+  const [year, mon] = month.split('-').map(Number);
+  const start = new Date(year, mon - 2, 21);
+  const end = new Date(year, mon - 1, 20);
+  return { start, end, startString:localDayString(start), endString:localDayString(end) };
+}
+function currentBatchMonth() {
+  const now = new Date();
+  const closing = new Date(now.getFullYear(), now.getMonth() + (now.getDate() > 20 ? 1 : 0), 1);
+  return localDayString(closing).slice(0,7);
+}
 function updateInputMode() {
   const lateOpen = document.getElementById('lateForm').style.display !== 'none';
   const batchOpen = document.getElementById('batchForm').style.display !== 'none';
@@ -670,7 +682,7 @@ function toggleBatchForm() {
     document.getElementById('lateForm').style.display = 'none';
     document.getElementById('lateButton').textContent = '前日までの出勤入力　⌄';
     const month = document.getElementById('batchMonth');
-    month.max = batchToday().slice(0,7);
+    month.max = currentBatchMonth();
     if (!month.value) month.value = month.max;
     renderBatchCalendar();
   }
@@ -681,54 +693,63 @@ function renderBatchCalendar() {
   const month = document.getElementById('batchMonth').value;
   const calendar = document.getElementById('batchCalendar');
   calendar.replaceChildren();
-  if (!/^\d{4}-\d{2}$/.test(month) || month > batchToday().slice(0,7)) {
-    document.getElementById('batchSummary').textContent = '当月以前の月を選択してください';
+  const period = batchPeriod(month);
+  if (!period || month > currentBatchMonth()) {
+    document.getElementById('batchSummary').textContent = '当日を含む締め期間までを選択してください';
+    document.getElementById('batchSubmitButton').disabled = true;
     return;
   }
-  const [year,mon] = month.split('-').map(Number);
-  const count = new Date(year,mon,0).getDate();
-  const start = new Date(year,mon-1,1).getDay();
+  const title=document.createElement('div');
+  title.style.cssText='grid-column:1/-1;text-align:center;font-size:13px;font-weight:800;color:#73695c;padding:4px 0';
+  title.textContent=`${period.start.getFullYear()}年${period.start.getMonth()+1}月21日 〜 ${period.end.getFullYear()}年${period.end.getMonth()+1}月20日`;
+  calendar.appendChild(title);
   ['日','月','火','水','木','金','土'].forEach(name=>{
     const el=document.createElement('div');el.className='dayhead';el.textContent=name;calendar.appendChild(el);
   });
-  for(let i=0;i<start;i++) { const blank=document.createElement('div');blank.className='blank';calendar.appendChild(blank); }
-  for(let day=1;day<=count;day++) {
-    const date=`${month}-${String(day).padStart(2,'0')}`;
-    const btn=document.createElement('button');btn.type='button';btn.textContent=day;
+  for(let i=0;i<period.start.getDay();i++) {
+    const blank=document.createElement('div');blank.className='blank';calendar.appendChild(blank);
+  }
+  for(let d=new Date(period.start);d<=period.end;d.setDate(d.getDate()+1)) {
+    const date=localDayString(d);
+    const btn=document.createElement('button');btn.type='button';
+    btn.textContent=d.getDate()===1?`${d.getMonth()+1}/1`:String(d.getDate());
+    btn.title=date;
     btn.disabled=date>batchToday() || batchSending;
     btn.className=batchSelected.has(date)?'selected':'';
     btn.setAttribute('aria-pressed',batchSelected.has(date)?'true':'false');
-    btn.onclick=()=>{ if(batchSelected.has(date))batchSelected.delete(date);else batchSelected.add(date);renderBatchCalendar(); };
+    btn.onclick=()=>{if(batchSelected.has(date))batchSelected.delete(date);else batchSelected.add(date);renderBatchCalendar();};
     calendar.appendChild(btn);
   }
   updateBatchSummary();
 }
 function selectBatchDays(mode) {
   if(batchSending)return;
-  const month=document.getElementById('batchMonth').value;
-  if(!/^\d{4}-\d{2}$/.test(month)||month>batchToday().slice(0,7))return;
-  const [year,mon]=month.split('-').map(Number);
-  const count=new Date(year,mon,0).getDate();
-  for(let day=1;day<=count;day++){
-    const date=`${month}-${String(day).padStart(2,'0')}`;
+  const period=batchPeriod(document.getElementById('batchMonth').value);
+  if(!period || document.getElementById('batchMonth').value>currentBatchMonth())return;
+  for(let d=new Date(period.start);d<=period.end;d.setDate(d.getDate()+1)) {
+    const date=localDayString(d);
     batchSelected.delete(date);
     if(date>batchToday())continue;
-    const weekday=new Date(year,mon-1,day).getDay();
+    const weekday=d.getDay();
     if(mode==='all'||(mode==='weekdays'&&weekday>=1&&weekday<=5)||(mode==='monSat'&&weekday>=1&&weekday<=6))batchSelected.add(date);
   }
   renderBatchCalendar();
 }
+function selectedBatchDates() {
+  const period=batchPeriod(document.getElementById('batchMonth').value);
+  if(!period)return [];
+  return [...batchSelected].filter(d=>d>=period.startString&&d<=period.endString&&d<=batchToday()).sort();
+}
 function updateBatchSummary() {
-  const month=document.getElementById('batchMonth').value;
-  const selected=[...batchSelected].filter(d=>d.startsWith(month+'-')&&d<=batchToday()).sort();
-  document.getElementById('batchSummary').textContent=selected.length?`${selected.length}日選択：${selected.map(d=>Number(d.slice(-2))+'日').join('、')}`:'日付を選択してください';
+  const selected=selectedBatchDates();
+  document.getElementById('batchSummary').textContent=selected.length?`${selected.length}日選択：${selected.map(d=>Number(d.slice(5,7))+'/'+Number(d.slice(-2))).join('、')}`:'日付を選択してください';
   document.getElementById('batchSubmitButton').disabled=!selected.length||batchSending;
 }
 document.getElementById('batchMonth').addEventListener('change',()=>{batchSelected.clear();renderBatchCalendar();});
 async function submitBatchCheckIn() {
   if(batchSending)return;
   const month=document.getElementById('batchMonth').value;
-  const dates=[...batchSelected].filter(d=>d.startsWith(month+'-')&&d<=batchToday()).sort();
+  const dates=selectedBatchDates();
   const employee=employeeSelect.value, workType=workTypeSelect.value, site=siteSelect.value;
   if(!employee||!site){alert('社員名と現場名を選択してください');return;}
   if(!dates.length){alert('出勤日を選択してください');return;}
