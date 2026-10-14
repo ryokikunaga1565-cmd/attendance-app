@@ -112,7 +112,7 @@ button{cursor:pointer}
 
 <main class="main">
   <!-- 端末登録画面（認証機能の準備中） -->
-<div id="deviceRegistration" style="display:block; background:white; border:1px solid #ddd; border-radius:12px; padding:16px; margin-bottom:16px;">
+<div id="deviceRegistration" style="display:none; background:white; border:1px solid #ddd; border-radius:12px; padding:16px; margin-bottom:16px;">
 
   <h2>端末登録</h2>
 
@@ -246,6 +246,37 @@ async function testDeviceStatus() {
   const result = await response.json();
 
   console.log("端末承認テスト結果:", result);
+}
+async function updateDeviceRegistrationDisplay() {
+  const employee = localStorage.getItem("employeeName");
+  const deviceId = localStorage.getItem("attendanceDeviceId");
+  const registration = document.getElementById("deviceRegistration");
+  const checkInButton = document.getElementById("checkInButton");
+checkInButton.disabled = true;
+
+  // 社員名が未設定なら、まだ判定しない
+  if (!employee || !deviceId) return;
+
+  try {
+    const url = webAppUrl
+      + "?action=checkDeviceStatus"
+      + "&employee=" + encodeURIComponent(employee)
+      + "&deviceId=" + encodeURIComponent(deviceId);
+
+    const response = await fetch(url);
+    const result = await response.json();
+
+    const approved =
+  result.result === "success" && result.approved === true;
+
+registration.style.display = approved ? "none" : "block";
+checkInButton.disabled = !approved;
+
+  } catch (error) {
+  console.error("端末承認状態の確認に失敗:", error);
+  registration.style.display = "block";
+  checkInButton.disabled = true;
+}
 }
 
 
@@ -470,6 +501,7 @@ if (savedSite) {
 
 
 loadMasterData();
+updateDeviceRegistrationDisplay();
 
 
 
@@ -566,6 +598,7 @@ setInterval(function () {
 
 
   localStorage.setItem("employeeName", employee);
+  updateDeviceRegistrationDisplay();
 
 
 
