@@ -148,6 +148,26 @@ button{cursor:pointer}
 
 </main></div>
 
+<!-- 出勤記録の修正画面 -->
+<div id="editForm" style="display:none; padding:16px; border:1px solid #ccc; border-radius:12px; margin:16px 0; background:white;">
+
+  <h3>出勤記録の修正</h3>
+
+  <p id="editDate"></p>
+
+  <label for="editSite">現場名</label>
+  <select id="editSite" style="width:100%; padding:12px; margin:8px 0 16px;"></select>
+
+  <label for="editWorkType">勤務区分</label>
+  <select id="editWorkType" style="width:100%; padding:12px; margin:8px 0 16px;">
+    <option value="通常勤務">通常勤務</option>
+    <option value="夜勤">夜勤</option>
+  </select>
+
+  <button type="button" id="saveEditButton" disabled>保存（準備中）</button>
+  <button type="button" onclick="document.getElementById('editForm').style.display='none'">キャンセル</button>
+
+</div>
 <script>
 
 (function(){const el=document.getElementById('todayDate');const d=new Date();el.textContent=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(d);})();
@@ -1463,6 +1483,31 @@ function updateHistoryMonthTitle() {
   document.getElementById("historyMonthTitle").textContent =
     `令和${reiwa}年${month}月分`;
 }
+// 出勤記録の修正画面
+function openEditForm(item) {
+  const editForm = document.getElementById("editForm");
+  const editSite = document.getElementById("editSite");
+  const editWorkType = document.getElementById("editWorkType");
+  const siteSelect = document.getElementById("site");
+
+  // 現場一覧をコピー
+  editSite.innerHTML = siteSelect.innerHTML;
+
+  // 現在の登録内容を選択
+  editSite.value = item.site;
+  editWorkType.value = item.workType;
+
+  // 日付を表示
+  document.getElementById("editDate").textContent =
+    "出勤日：" + item.date;
+
+  // 修正画面を表示
+  editForm.style.display = "block";
+  editForm.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
 async function loadHistory() {
   const list = document.getElementById("historyList");
   const employee = document.getElementById("employee").value;
@@ -1606,9 +1651,9 @@ editButton.style.fontSize = "16px";
 editButton.style.borderRadius = "8px";
   editButton.type = "button";
 
-  editButton.onclick = function() {
-    alert("修正画面はこれから作成します");
-  };
+ editButton.onclick = function() {
+  openEditForm(item);
+};
 
   editCell.appendChild(editButton);
 }
