@@ -121,9 +121,9 @@ button{cursor:pointer}
     会社の承認後に利用できるようになります。
   </p>
 
-  <button type="button" id="requestDeviceButton" disabled>
-    端末登録を申請する（準備中）
-  </button>
+ <button type="button" id="requestDeviceButton">
+  端末登録を申請する
+</button>
 
   <p id="deviceRegistrationStatus"></p>
 
@@ -211,7 +211,13 @@ button{cursor:pointer}
 
   // この端末に保存されている前回の選択内容を読み込む
 
+// この端末専用のIDを保存する
+let deviceId = localStorage.getItem("attendanceDeviceId");
 
+if (!deviceId) {
+  deviceId = crypto.randomUUID();
+  localStorage.setItem("attendanceDeviceId", deviceId);
+}
 
   const savedEmployee = localStorage.getItem("employeeName");
 
@@ -611,7 +617,54 @@ setInterval(function () {
 
 
 
+// 端末登録を申請する
+async function requestDeviceRegistration() {
+  const employee = employeeSelect.value;
+  const deviceId = localStorage.getItem("attendanceDeviceId");
+  const status = document.getElementById("deviceRegistrationStatus");
+  const button = document.getElementById("requestDeviceButton");
 
+  if (!employee) {
+    alert("先に社員名を選択してください");
+    return;
+  }
+
+  if (!deviceId) {
+    alert("端末IDが見つかりません");
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "申請中...";
+
+  try {
+    const response = await fetch(webAppUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "requestDevice",
+        employee: employee,
+        deviceId: deviceId
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.result === "success") {
+      status.textContent = "申請しました。管理者の承認をお待ちください。";
+    } else if (result.result === "alreadyRequested") {
+      status.textContent = "この端末は登録済み、または申請中です。";
+    } else {
+      throw new Error(result.message || "申請に失敗しました");
+    }
+  } catch (error) {
+    status.textContent = "申請できませんでした：" + error.message;
+    button.disabled = false;
+  }
+}
+
+// 申請ボタンと送信処理をつなぐ
+document.getElementById("requestDeviceButton")
+  .addEventListener("click", requestDeviceRegistration);
 
   async function checkIn() {
 
