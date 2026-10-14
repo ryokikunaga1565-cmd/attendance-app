@@ -1594,6 +1594,8 @@ if (weekday === 0) {
     // 修正ボタン
 const editCell = row.insertCell();
 editCell.style.padding = "8px";
+editCell.style.border = "1px solid #aaa";
+editCell.style.textAlign = "center";
 
 if (item.id) {
   const editButton = document.createElement("button");
