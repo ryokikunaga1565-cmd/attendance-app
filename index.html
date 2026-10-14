@@ -232,7 +232,21 @@ if (!deviceId) {
 
 
   const webAppUrl = "https://script.google.com/macros/s/AKfycbxjvNYi0z_OMa-qCXwCydP1e9H86LtC9hTW-Qnpp4yfTr6FyFao3CBL1nEnngwr5TPS/exec";
+// 端末の承認状態を確認するテスト
+async function testDeviceStatus() {
+  const employee = localStorage.getItem("employeeName");
+  const deviceId = localStorage.getItem("attendanceDeviceId");
 
+  const url = webAppUrl
+    + "?action=checkDeviceStatus"
+    + "&employee=" + encodeURIComponent(employee)
+    + "&deviceId=" + encodeURIComponent(deviceId);
+
+  const response = await fetch(url);
+  const result = await response.json();
+
+  console.log("端末承認テスト結果:", result);
+}
 
 
 
@@ -818,7 +832,8 @@ message.style.color = "";
 
 
 
-        site: site
+       site: site,
+deviceId: localStorage.getItem("attendanceDeviceId")
 
 
 
@@ -1296,7 +1311,8 @@ try {
 
 
 
-        action: "lateCheckIn"
+        workDate: workDate,
+action: "lateCheckIn"
 
 
 
@@ -1952,8 +1968,12 @@ async function submitBatchCheckIn() {
 
       // 当日分は通常の出勤API、過去日は後日申請APIを利用
 
-      const payload={employee,workType,site};
-
+const payload={
+  employee,
+  workType,
+  site,
+  deviceId: localStorage.getItem("attendanceDeviceId")
+};
       if(date!==batchToday()){payload.workDate=date;payload.action='lateCheckIn';}
 
       const response=await fetch(webAppUrl,{method:'POST',body:JSON.stringify(payload)});
