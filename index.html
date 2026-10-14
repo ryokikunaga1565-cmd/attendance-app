@@ -1600,6 +1600,10 @@ editCell.style.textAlign = "center";
 if (item.id) {
   const editButton = document.createElement("button");
   editButton.textContent = "修正";
+  editButton.style.width = "100%";
+editButton.style.padding = "10px 2px";
+editButton.style.fontSize = "16px";
+editButton.style.borderRadius = "8px";
   editButton.type = "button";
 
   editButton.onclick = function() {
