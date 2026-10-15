@@ -804,51 +804,18 @@ async function loadMasterData() {
 
     if (savedEmployee) {
 
+  // 社員変更画面が開いていないときだけ表示を戻す
+  if (employeeSelect.style.display !== "block") {
 
+    employeeSelect.value = savedEmployee;
 
+    document.getElementById("employeeName").textContent = savedEmployee;
 
+    document.getElementById("employeeDisplay").style.display = "block";
 
+    employeeSelect.style.display = "none";
 
-
-  employeeSelect.value = savedEmployee;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  document.getElementById("employeeName").textContent = savedEmployee;
-
-
-
-
-
-
-
-  document.getElementById("employeeDisplay").style.display = "block";
-
-
-
-
-
-
-
-  employeeSelect.style.display = "none";
-
-
-
-
-
-
+  }
 
 }
 
