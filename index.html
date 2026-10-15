@@ -364,9 +364,19 @@ button{cursor:pointer}
 
 
 
-  <button type="button" id="saveEditButton" onclick="saveAttendanceEdit()">保存する</button>
+  <div style="display:flex; gap:12px; margin-top:16px;">
+  <button type="button" id="saveEditButton"
+    onclick="saveAttendanceEdit()"
+    style="flex:1; padding:16px; font-size:18px; border-radius:10px;">
+    保存する
+  </button>
 
-  <button type="button" onclick="document.getElementById('editForm').style.display='none'">キャンセル</button>
+  <button type="button"
+    onclick="document.getElementById('editForm').style.display='none'"
+    style="flex:1; padding:16px; font-size:18px; border-radius:10px;">
+    キャンセル
+  </button>
+</div>
 
 
 
