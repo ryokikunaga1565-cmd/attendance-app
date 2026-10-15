@@ -1,178 +1,528 @@
 <!DOCTYPE html>
+
+
+
 <html lang="ja"><head>
+
+
+
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+
+
 <meta name="theme-color" content="#14523e"><title>出勤簿</title>
+
+
+
 <link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"><link rel="manifest" href="manifest.json">
+
+
+
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="出勤簿">
+
+
+
 <style>
+
+
+
 :root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#30383e;background:#f3f0e9}
+
+
+
 *{box-sizing:border-box}body{margin:0;background:#f3f0e9}button,select,input{font-family:inherit}
+
+
+
 .container{max-width:520px;margin:auto;min-height:100dvh;background:#faf8f3}
+
+
+
 .hero{background:#e9e2d6;color:#2d3338;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid #ded5c6}
+
+
+
 .topline{display:flex;align-items:center;justify-content:center;position:relative;min-height:55px}
+
+
+
 .brand-title{display:flex;align-items:center;justify-content:center;gap:16px;width:100%;min-width:0}
+
+
+
 .brand-logo{width:51px;height:51px;object-fit:contain;flex-shrink:0;background:transparent;border:0;border-radius:0;padding:0}
+
+
+
 h1{font-size:27px;line-height:1.2;margin:0;font-weight:850;color:#30383e;white-space:nowrap}
+
+
+
 .refresh{position:absolute;right:0;top:calc(100% + 2px);z-index:1;border:1px solid #d0c4b4;background:#f9f6ef;color:#4c4a44;border-radius:9px;padding:9px 11px;font-size:13px;font-weight:800;min-height:40px;cursor:pointer}
+
+
+
 .today{margin:8px 0 0;min-height:27px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:clamp(14px,4vw,18px);color:#4d4034;font-weight:850;text-align:center;white-space:nowrap}.today::before{content:"今日";flex-shrink:0;color:#85715a;font-size:11px;font-weight:750}@media(max-width:370px){.today{margin-right:0;font-size:13px;gap:5px}.today::before{font-size:10px}}
+
+
+
 .main{padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+
+
+
 .employee-line{display:flex;align-items:center;gap:10px;margin-bottom:11px;padding:9px 12px;background:#f0ece5;border:1px solid #e0d9cf;border-radius:11px;min-height:43px}
+
+
+
 .employee-label{font-size:12px;font-weight:800;color:#736b62;flex-shrink:0}
+
+
+
 #employeeDisplay{flex:1;min-width:0}#employeeName{font-size:16px;font-weight:850;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+
+
 #employee{flex:1;min-width:0}
+
+
+
 .panel{background:white;border:1px solid #e4ded4;border-radius:14px;padding:14px 13px 15px;box-shadow:0 2px 8px #493c2710}
+
+
+
 .section-title{font-size:13px;font-weight:850;color:#73695c;margin:0 0 9px}
+
+
+
 label{display:block;font-size:14px;font-weight:850;margin:10px 0 5px}
+
+
+
 select,input{width:100%;height:49px;padding:9px 12px;font-size:17px;font-weight:650;border:2px solid #d8d1c7;border-radius:10px;background:#fff;color:#30383e}
+
+
+
 select:focus,input:focus{outline:2px solid #bd9e60;outline-offset:1px}
+
+
+
 button{cursor:pointer}
+
+
+
 #checkInButton{display:block;width:100%;min-height:64px;margin-top:12px;background:#f5c758;color:#292c30;border:0;border-bottom:4px solid #c99a2e;border-radius:13px;font-size:23px;font-weight:900;box-shadow:0 4px 10px #bd8c1625}
+
+
+
 #checkInButton:disabled,#lateSubmitButton:disabled{opacity:.6;cursor:not-allowed}
+
+
+
 #lateButton{display:block;width:100%;min-height:45px;margin-top:10px;background:#fff;border:1.5px solid #d6cbb9;border-radius:11px;color:#4e4942;font-size:14px;font-weight:800}
+
+
+
 #lateForm,#batchForm{background:white;border:1px solid #e0d8cd;border-radius:12px;margin-top:9px;padding:11px 13px}
+
+
+
 #batchSubmitButton{width:100%;min-height:49px;margin-top:12px;border:0;border-radius:10px;background:#77614b;color:white;font-size:16px;font-weight:850}
+
+
+
 #batchButton{display:block;width:100%;min-height:45px;margin-top:10px;background:#fff;border:1.5px solid #d6cbb9;border-radius:11px;color:#4e4942;font-size:14px;font-weight:800}
+
+
+
 .batch-actions{display:flex;gap:7px;margin:9px 0}.batch-actions button{flex:1;border:1px solid #d6cbb9;background:#faf8f3;border-radius:8px;padding:9px 2px;font-size:12px;font-weight:800}.batch-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.batch-calendar .dayhead{text-align:center;font-size:12px;color:#756a5e;padding:5px 0}.batch-calendar button{border:1px solid #ded8ce;border-radius:8px;min-height:38px;background:#fff;color:#30383e;font-weight:700}.batch-calendar button.selected{background:#14523e;color:white;border-color:#14523e}.batch-calendar button:disabled{background:#efede8;color:#b6afa5;cursor:not-allowed}.batch-summary{font-size:13px;line-height:1.6;margin-top:9px;white-space:pre-wrap}.batch-calendar .blank{min-height:38px}.batch-calendar button.registered{background:#e0e0e0;color:#777;border-color:#ccc;opacity:1}.batch-calendar button.registered:disabled{background:#e0e0e0;color:#777;opacity:1}
+
+
+
 #checkInButton:disabled{opacity:.55;cursor:not-allowed}
+
+
+
 #lateSubmitButton{width:100%;min-height:48px;margin-top:11px;border:0;border-radius:10px;background:#77614b;color:#fff;font-size:16px;font-weight:850}
+
+
+
 #message{font-size:14px;font-weight:800;text-align:center;border-radius:10px;line-height:1.5;margin-top:10px}
+
+
+
 #message:not(:empty){padding:11px}
+
+
+
 .settings{display:block;margin:10px auto 0;background:transparent;border:0;color:#85796c;font-size:12px;padding:8px 14px;text-decoration:underline;text-underline-offset:3px}
+
+
+
 @media(min-width:600px){.container{min-height:0;margin:24px auto;border-radius:19px;overflow:hidden;box-shadow:0 12px 32px #493c271c}}
+
+
+
 @media(max-width:370px){.brand-logo{width:44px;height:44px}.brand-title{gap:10px}h1{font-size:24px}.refresh{padding:7px;font-size:12px}}
+
+
+
 @media(max-height:690px){.hero{padding-bottom:9px}.main{padding-top:9px}.panel{padding:10px 12px}.employee-line{margin-bottom:8px}#checkInButton{min-height:57px}select,input{height:45px}label{margin-top:7px}}
+
+
+
+
+
 /* 前日入力・まとめて入力を横並びにする */
+
 .input-mode-buttons{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:12px}
+
 #lateButton,#batchButton{width:100%;min-width:0;min-height:76px;margin-top:0;padding:10px 5px;font-size:clamp(15px,4.2vw,18px);line-height:1.35;white-space:pre-line;text-align:center;font-weight:850}
+
 #lateButton:disabled,#batchButton:disabled{opacity:.55;cursor:not-allowed}
+
 #historyButton {
+
   display: block;
+
   width: 100%;
+
   min-height: 45px;
+
   margin-top: 12px;
+
   background: #fff;
+
   border: 1.5px solid #d6cbb9;
+
   border-radius: 11px;
+
   color: #4e4942;
+
   font-size: 15px;
+
   font-weight: 800;
+
   cursor: pointer;
+
 }
+
+
+
 #historyForm {
+
   margin-top: 10px;
+
 }
+
 </style></head><body>
+
+
+
 <div class="container"><header class="hero"><div class="topline"><div class="brand-title"><img class="brand-logo" src="data:image/png;base64,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" alt="菊永建設のロゴ"><h1>出勤簿</h1><img class="brand-logo" src="data:image/png;base64,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" alt="アールシーのロゴ"></div><button class="refresh" type="button" onclick="refreshApp()">↻ 更新</button></div><div class="today" id="todayDate">日付を確認中...</div></header>
+
+
+
 <main class="main">
+
   <!-- 端末登録画面（認証機能の準備中） -->
+
 <div id="deviceRegistration" style="display:none; background:white; border:1px solid #ddd; border-radius:12px; padding:16px; margin-bottom:16px;">
+
+
+
   <h2>端末登録</h2>
+
+
+
   <p>
+
     このスマートフォンを出勤簿に登録します。<br>
+
     会社の承認後に利用できるようになります。
+
   </p>
+
+
+
  <button type="button" id="requestDeviceButton">
+
   端末登録を申請する
+
 </button>
+
+
+
   <p id="deviceRegistrationStatus"></p>
+
+
+
 </div>
+
+
+
 <div class="employee-line"><span class="employee-label">登録者</span><div id="employeeDisplay" style="display:none"><div id="employeeName"></div></div><select id="employee" aria-label="登録者"><option value="">読み込み中...</option></select></div>
+
+
+
 <section class="panel"><div class="section-title">本日の勤務内容</div><label for="workType">勤務区分</label><select id="workType"><option>通常勤務</option><option>夜勤</option></select><label for="site">現場名</label><select id="site"><option value="">読み込み中...</option></select></section>
+
+
+
 <button id="checkInButton" type="button" onclick="checkIn()">✓ 出勤する</button>
+
+
+
 <div class="input-mode-buttons">
+
 <button id="lateButton" type="button" onclick="showLateForm()">前日までの
+
 出勤入力 ⌄</button>
+
 <button id="batchButton" type="button" onclick="toggleBatchForm()">まとめて
+
 出勤入力 ⌄</button>
+
 </div>
+
+
+
 <div id="lateForm" style="display:none"><label for="workDate">出勤日</label><input type="date" id="workDate"><button id="lateSubmitButton" type="button" onclick="submitLateCheckIn()">後日申請する</button></div>
+
+
+
 <div id="batchForm" style="display:none"><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
+
 <!-- 出勤履歴 -->
+
 <button id="historyButton" type="button" onclick="toggleHistory()">
+
   自分の出勤履歴を見る ▼
+
 </button>
+
+
+
 <div id="historyForm" style="display:none;">
+
   <div id="historyMonthNav" style="display:flex;align-items:center;justify-content:space-between;margin:12px 0;">
+
   <button type="button" onclick="changeHistoryMonth(-1)">◀</button>
+
+
+
   <strong id="historyMonthTitle">令和8年10月分</strong>
+
+
+
   <button type="button" onclick="changeHistoryMonth(1)">▶</button>
+
 </div>
+
+
+
 <div id="historyList"></div>
+
 </div>
+
 <div id="message" role="status" aria-live="polite"></div><button class="settings" type="button" onclick="changeEmployee()">社員設定を変更</button>
+
+
+
 </main></div>
+
+
+
 <!-- 出勤記録の修正画面 -->
+
 <div id="editForm" style="display:none; padding:16px; border:1px solid #ccc; border-radius:12px; margin:16px 0; background:white;">
+
+
+
   <h3>出勤記録の修正</h3>
+
+
+
   <p id="editDate"></p>
+
+
+
   <label for="editSite">現場名</label>
+
   <select id="editSite" style="width:100%; padding:12px; margin:8px 0 16px;"></select>
+
+
+
   <label for="editWorkType">勤務区分</label>
+
   <select id="editWorkType" style="width:100%; padding:12px; margin:8px 0 16px;">
+
     <option value="通常勤務">通常勤務</option>
+
     <option value="夜勤">夜勤</option>
+
   </select>
+
+
+
   <button type="button" id="saveEditButton" onclick="saveAttendanceEdit()">保存する</button>
+
   <button type="button" onclick="document.getElementById('editForm').style.display='none'">キャンセル</button>
+
+
+
 </div>
+
 <script>
+
+
+
 (function(){const el=document.getElementById('todayDate');const d=new Date();el.textContent=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(d);})();
+
+
+
+
+
+
+
+
+
+
+
   const employeeSelect = document.getElementById("employee");
+
+
+
+
+
+
+
   const workTypeSelect = document.getElementById("workType");
+
+
+
+
+
+
+
   const siteSelect = document.getElementById("site");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // この端末に保存されている前回の選択内容を読み込む
+
+
+
 // この端末専用のIDを保存する
+
 let deviceId = localStorage.getItem("attendanceDeviceId");
+
+
+
 if (!deviceId) {
+
   deviceId = crypto.randomUUID();
+
   localStorage.setItem("attendanceDeviceId", deviceId);
+
 }
+
+
+
   const savedEmployee = localStorage.getItem("employeeName");
+
+
+
+
+
+
+
   const savedWorkType = localStorage.getItem("workType");
+
+
+
+
+
+
+
   const savedSite = localStorage.getItem("site");
+
+
+
+
+
+
+
   const webAppUrl = "https\://script.google.com/macros/s/AKfycbxjvNYi0z_OMa-qCXwCydP1e9H86LtC9hTW-Qnpp4yfTr6FyFao3CBL1nEnngwr5TPS/exec";
+
 // 端末の承認状態を確認するテスト
+
 async function testDeviceStatus() {
+
   const employee = localStorage.getItem("employeeName");
+
   const deviceId = localStorage.getItem("attendanceDeviceId");
+
+
+
   const url = webAppUrl
+
     + "?action=checkDeviceStatus"
+
     + "&employee=" + encodeURIComponent(employee)
+
     + "&deviceId=" + encodeURIComponent(deviceId);
+
+
+
   const response = await fetch(url);
+
   const result = await response.json();
+
+
+
   console.log("端末承認テスト結果:", result);
+
 }
+
 let deviceApproved = false;
-let deviceChecking = true;
 let deviceCheckVersion = 0;
+
 function isDeviceApproved() {
   return deviceApproved === true;
 }
+
 function applyDeviceAccess() {
   const approved = isDeviceApproved();
   const registration = document.getElementById("deviceRegistration");
   const lateOpen = document.getElementById("lateForm").style.display !== "none";
   const batchOpen = document.getElementById("batchForm").style.display !== "none";
-  registration.style.display = (deviceChecking || approved) ? "none" : "block";
+  registration.style.display = approved ? "none" : "block";
   document.getElementById("checkInButton").disabled = !approved || lateOpen || batchOpen || batchSending;
   document.getElementById("lateSubmitButton").disabled = !approved;
   document.getElementById("batchSubmitButton").disabled = !approved || !batchRegisteredReady || batchSending || !selectedBatchDates().length;
   document.getElementById("lateButton").disabled = !approved || batchSending;
   document.getElementById("batchButton").disabled = !approved || batchSending;
 }
+
 async function updateDeviceRegistrationDisplay() {
-    const version = ++deviceCheckVersion;
-  deviceChecking = true;
+  const version = ++deviceCheckVersion;
   deviceApproved = false;
   applyDeviceAccess();
   const employee = localStorage.getItem("employeeName");
   const currentDeviceId = localStorage.getItem("attendanceDeviceId");
-    if (!employee || !currentDeviceId) {
-    deviceChecking = false;
-    applyDeviceAccess();
-    return;
-  }
+  if (!employee || !currentDeviceId) return;
   try {
     const url = webAppUrl + "?action=checkDeviceStatus"
       + "&employee=" + encodeURIComponent(employee)
@@ -187,409 +537,2667 @@ async function updateDeviceRegistrationDisplay() {
     console.error("端末承認状態の確認に失敗:", error);
     deviceApproved = false;
   }
-    deviceChecking = false;
   applyDeviceAccess();
   if (document.getElementById("batchForm").style.display !== "none") renderBatchCalendar();
 }
-}
+
 async function loadMasterData() {
+
+
+
+
+
+
+
   try {
+
+
+
+
+
+
+
     const response = await fetch(webAppUrl);
+
+
+
+
+
+
+
     const data = await response.json();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // 社員一覧
+
+
+
+
+
+
+
     employeeSelect.innerHTML =
+
+
+
+
+
+
+
       '<option value="">選択してください</option>';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     data.employees.forEach(function(employee) {
+
+
+
+
+
+
+
       const option = document.createElement("option");
+
+
+
+
+
+
+
       option.value = employee;
+
+
+
+
+
+
+
       option.textContent = employee;
+
+
+
+
+
+
+
       employeeSelect.appendChild(option);
+
+
+
+
+
+
+
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // 現場一覧
+
+
+
+
+
+
+
     siteSelect.innerHTML =
+
+
+
+
+
+
+
       '<option value="">選択してください</option>';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     data.sites.forEach(function(site) {
+
+
+
+
+
+
+
       const option = document.createElement("option");
+
+
+
+
+
+
+
       option.value = site;
+
+
+
+
+
+
+
       option.textContent = site;
+
+
+
+
+
+
+
       siteSelect.appendChild(option);
+
+
+
+
+
+
+
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // 前回選択した社員・現場を復元
+
+
+
+
+
+
+
     const savedEmployee = localStorage.getItem("employeeName");
+
+
+
+
+
+
+
     const savedSite = localStorage.getItem("site");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if (savedEmployee) {
+
+
+
+
+
+
+
   employeeSelect.value = savedEmployee;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   document.getElementById("employeeName").textContent = savedEmployee;
+
+
+
+
+
+
+
   document.getElementById("employeeDisplay").style.display = "block";
+
+
+
+
+
+
+
   employeeSelect.style.display = "none";
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if (savedSite) {
+
+
+
+
+
+
+
   siteSelect.value = savedSite;
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   } catch (error) {
+
+
+
+
+
+
+
     employeeSelect.innerHTML =
+
+
+
+
+
+
+
       '<option value="">社員一覧を取得できませんでした</option>';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     siteSelect.innerHTML =
+
+
+
+
+
+
+
       '<option value="">現場一覧を取得できませんでした</option>';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     console.error(error);
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 loadMasterData();
+
+
+
+
+
+
+
 // 10秒ごとに最新の社員・現場マスターを取得
+
+
+
+
+
+
+
 setInterval(function () {
+
+
+
+
+
+
+
   loadMasterData();
+
+
+
+
+
+
+
 }, 10000);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 前回の内容を画面に反映
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (savedWorkType) {
+
+
+
+
+
+
+
     workTypeSelect.value = savedWorkType;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (savedSite) {
+
+
+
+
+
+
+
     siteSelect.value = savedSite;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 社員名を変更したら保存
+
+
+
+
+
+
+
   employeeSelect.addEventListener("change", function () {
+
+
+
+
+
+
+
   const employee = employeeSelect.value;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (!employee) return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   localStorage.setItem("employeeName", employee);
+
   updateDeviceRegistrationDisplay();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   document.getElementById("employeeName").textContent = employee;
+
+
+
+
+
+
+
   document.getElementById("employeeDisplay").style.display = "block";
+
+
+
+
+
+
+
   employeeSelect.style.display = "none";
+
+
+
+
+
+
+
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 勤務区分を変更したら保存
+
+
+
+
+
+
+
   workTypeSelect.addEventListener("change", function () {
+
+
+
+
+
+
+
     localStorage.setItem("workType", workTypeSelect.value);
+
+
+
+
+
+
+
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 現場名を変更したら保存
+
+
+
+
+
+
+
   siteSelect.addEventListener("change", function () {
+
+
+
+
+
+
+
     localStorage.setItem("site", siteSelect.value);
+
+
+
+
+
+
+
   });
+
+
+
+
+
+
+
+
+
+
+
 // 端末登録を申請する
+
 async function requestDeviceRegistration() {
+
   const employee = employeeSelect.value;
+
   const deviceId = localStorage.getItem("attendanceDeviceId");
+
   const status = document.getElementById("deviceRegistrationStatus");
+
   const button = document.getElementById("requestDeviceButton");
+
+
+
   if (!employee) {
+
     alert("先に社員名を選択してください");
+
     return;
+
   }
+
+
+
   if (!deviceId) {
+
     alert("端末IDが見つかりません");
+
     return;
+
   }
+
+
+
   button.disabled = true;
+
   status.textContent = "申請中...";
+
+
+
   try {
+
     const response = await fetch(webAppUrl, {
+
       method: "POST",
+
       body: JSON.stringify({
+
         action: "requestDevice",
+
         employee: employee,
+
         deviceId: deviceId
+
       })
+
     });
+
+
+
     const result = await response.json();
+
+
+
     if (result.result === "success") {
+
       status.textContent = "申請しました。管理者の承認をお待ちください。";
+
     } else if (result.result === "alreadyRequested") {
+
       status.textContent = "この端末は登録済み、または申請中です。";
+
     } else {
+
       throw new Error(result.message || "申請に失敗しました");
+
     }
+
   } catch (error) {
+
     status.textContent = "申請できませんでした：" + error.message;
+
     button.disabled = false;
+
   }
+
 }
+
+
+
 // 申請ボタンと送信処理をつなぐ
+
 document.getElementById("requestDeviceButton")
+
   .addEventListener("click", requestDeviceRegistration);
+
+
+
   async function checkIn() {
   if (!isDeviceApproved()) { alert("この端末は承認されていません"); return; }
+
+
+
   if (document.getElementById("lateForm").style.display !== "none" || document.getElementById("batchForm").style.display !== "none") return;
+
+
+
   if (document.getElementById("lateForm").style.display !== "none") return;
+
+
+
+
+
+
+
   const employee = employeeSelect.value;
+
+
+
+
+
+
+
   const workType = workTypeSelect.value;
+
+
+
+
+
+
+
   const site = siteSelect.value;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (!employee) {
+
+
+
+
+
+
+
     alert("社員名を選択してください");
+
+
+
+
+
+
+
     return;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (!site) {
+
+
+
+
+
+
+
     alert("現場名を選択してください");
+
+
+
+
+
+
+
     return;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 前回の選択内容を保存
+
+
+
+
+
+
+
   localStorage.setItem("employeeName", employee);
+
+
+
+
+
+
+
   localStorage.setItem("workType", workType);
+
+
+
+
+
+
+
   localStorage.setItem("site", site);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const url = "https\://script.google.com/macros/s/AKfycbxjvNYi0z_OMa-qCXwCydP1e9H86LtC9hTW-Qnpp4yfTr6FyFao3CBL1nEnngwr5TPS/exec";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const button = document.getElementById("checkInButton");
+
+
+
+
+
+
+
   const message = document.getElementById("message");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   button.disabled = true;
+
+
+
+
+
+
+
   button.textContent = "送信中...";
+
+
+
+
+
+
+
   message.textContent = "";
+
+
+
+
+
+
+
   message.style.background = "transparent";
+
+
+
+
+
+
+
 message.style.color = "";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   try {
+
+
+
+
+
+
+
     const response = await fetch(url, {
+
+
+
+
+
+
+
       method: "POST",
+
+
+
+
+
+
+
       body: JSON.stringify({
+
+
+
+
+
+
+
         employee: employee,
+
+
+
+
+
+
+
         workType: workType,
+
+
+
+
+
+
+
        site: site,
+
 deviceId: localStorage.getItem("attendanceDeviceId")
+
+
+
+
+
+
+
       })
+
+
+
+
+
+
+
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const result = await response.json();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if (result.result === "duplicate") {
+
+
+
+
+
+
+
       message.textContent =
+
+
+
+
+
+
+
         "⚠ 本日はすでに「" + workType + "」で出勤登録されています";
+
+
+
+
+
+
+
         message.style.background = "#ffebee";
+
+
+
+
+
+
+
 message.style.color = "#c62828";
+
+
+
+
+
+
+
       return;
+
+
+
+
+
+
+
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if (result.result === "success") {
+
+
+
+
+
+
+
       const now = new Date();
+
+
+
+
+
+
+
       const time = now.toLocaleTimeString("ja-JP");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       message.textContent =
+
+
+
+
+
+
+
         "✓ " + employee + "　出勤しました　" + time;
+
+
+
+
+
+
+
         message.style.background = "#e8f5e9";
+
+
+
+
+
+
+
 message.style.color = "#2e7d32";
+
+
+
+
+
+
+
     } else {
+
+
+
+
+
+
+
       throw new Error(result.message || "登録結果が不明です");
+
+
+
+
+
+
+
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   } catch (error) {
+
+
+
+
+
+
+
     message.textContent = "⚠ 出勤記録を送信できませんでした";
+
+
+
+
+
+
+
     message.style.background = "#ffebee";
+
+
+
+
+
+
+
 message.style.color = "#c62828";
+
+
+
+
+
+
+
     console.error(error);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   } finally {
+
+
+
+
+
+
+
 applyDeviceAccess();
+
+
+
+
+
     button.textContent = "✓ 出勤する";
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
 function showLateForm() {
   if (!isDeviceApproved()) return;
+
+
+
+
+
+
+
   const lateForm = document.getElementById("lateForm");
+
+
+
+
+
+
+
   const workDate = document.getElementById("workDate");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 今日の日付
+
+
+
+
+
+
+
   const today = new Date();
+
+
+
+
+
+
+
   const yyyy = today.getFullYear();
+
+
+
+
+
+
+
   const mm = String(today.getMonth() + 1).padStart(2, "0");
+
+
+
+
+
+
+
   const dd = String(today.getDate()).padStart(2, "0");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 昨日の日付を作る
+
+
+
+
+
+
+
 const yesterday = new Date(today);
+
+
+
+
+
+
+
 yesterday.setDate(today.getDate() - 1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const yyyyy = yesterday.getFullYear();
+
+
+
+
+
+
+
 const ymm = String(yesterday.getMonth() + 1).padStart(2, "0");
+
+
+
+
+
+
+
 const ydd = String(yesterday.getDate()).padStart(2, "0");
+
+
+
+
+
+
+
 const yesterdayString = `${yyyyy}-${ymm}-${ydd}`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // 「前日まで」なので今日の日付は選べない
+
+
+
+
+
+
+
 workDate.max = yesterdayString;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // 初回は昨日を表示
+
+
+
+
+
+
+
 if (!workDate.value) {
+
+
+
+
+
+
+
   workDate.value = yesterdayString;
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const opening = lateForm.style.display === "none";
+
+
+
   if(opening) {
+
+
+
     document.getElementById('batchForm').style.display='none';
+
+
+
     document.getElementById('batchButton').textContent='まとめて\n出勤入力 ⌄';
+
+
+
   }
+
+
+
   lateForm.style.display = opening ? "block" : "none";
+
+
+
   const checkInButton = document.getElementById("checkInButton");
+
+
+
   applyDeviceAccess();
+
+
+
   checkInButton.title = opening ? "後日申請中は本日の出勤登録はできません" : "";
+
+
+
   document.getElementById("lateButton").textContent = opening
+
+
+
     ? "前日までの\n出勤入力 ⌃"
+
+
+
     : "前日までの\n出勤入力 ⌄";
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
 async function submitLateCheckIn() {
   if (!isDeviceApproved()) { alert("この端末は承認されていません"); return; }
+
+
+
+
+
+
+
   const employee = employeeSelect.value;
+
+
+
+
+
+
+
   const workType = workTypeSelect.value;
+
+
+
+
+
+
+
   const site = siteSelect.value;
+
+
+
+
+
+
+
   const workDate = document.getElementById("workDate").value;
+
+
+
+
+
+
+
   const message = document.getElementById("message");
+
+
+
+
+
+
+
   const lateSubmitButton = document.getElementById("lateSubmitButton");
+
+
+
+
+
+
+
   message.textContent = "";
+
+
+
+
+
+
+
 message.style.background = "transparent";
+
+
+
+
+
+
+
 message.style.color = "";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (!employee) {
+
+
+
+
+
+
+
     alert("社員名を選択してください");
+
+
+
+
+
+
+
     return;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (!site) {
+
+
+
+
+
+
+
     alert("現場名を選択してください");
+
+
+
+
+
+
+
     return;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (!workDate) {
+
+
+
+
+
+
+
     alert("出勤日を選択してください");
+
+
+
+
+
+
+
     return;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
 const today = new Date();
+
+
+
+
+
+
+
 today.setHours(0, 0, 0, 0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const selectedDate = new Date(workDate + "T00:00:00");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if (selectedDate >= today) {
+
+
+
+
+
+
+
   alert("前日までの日付を選択してください");
+
+
+
+
+
+
+
   return;
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
 lateSubmitButton.disabled = true;
+
+
+
+
+
+
+
 lateSubmitButton.textContent = "送信中...";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // 「送信中...」を画面に描画させる
+
+
+
+
+
+
+
 await new Promise(resolve => setTimeout(resolve, 500));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 try {
+
+
+
+
+
+
+
     const response = await fetch(webAppUrl, {
+
+
+
+
+
+
+
       method: "POST",
+
+
+
+
+
+
+
       body: JSON.stringify({
+
+
+
+
+
+
+
         employee: employee,
+
+
+
+
+
+
+
         workType: workType,
+
+
+
+
+
+
+
         site: site,
+
+
+
+
+
+
+
         workDate: workDate,
         deviceId: localStorage.getItem("attendanceDeviceId"),
         action: "lateCheckIn"
+
+
+
+
+
+
+
       })
+
+
+
+
+
+
+
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const result = await response.json();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if (result.result === "duplicate") {
+
+
+
+
+
+
+
       message.textContent = "⚠ この日はすでに同じ勤務区分で登録されています";
+
+
+
+
+
+
+
       message.style.background = "#ffebee";
+
+
+
+
+
+
+
 message.style.color = "#c62828";
+
+
+
+
+
+
+
       return;
+
+
+
+
+
+
+
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if (result.result === "success") {
+
+
+
+
+
+
+
       message.textContent = "✓ 後日申請しました";
+
+
+
+
+
+
+
       message.style.background = "#e8f5e9";
+
+
+
+
+
+
+
 message.style.color = "#2e7d32";
+
+
+
+
+
+
+
     } else {
+
+
+
+
+
+
+
       throw new Error(result.message || "登録結果が不明です");
+
+
+
+
+
+
+
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   } catch (error) {
+
+
+
+
+
+
+
   message.textContent = "⚠ 後日申請を送信できませんでした";
+
+
+
+
+
+
+
   message.style.background = "#ffebee";
+
+
+
+
+
+
+
   message.style.color = "#c62828";
+
+
+
+
+
+
+
   console.error(error);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 } finally {
+
+
+
+
+
+
+
   applyDeviceAccess();
+
+
+
+
+
+
+
   lateSubmitButton.textContent = "後日申請する";
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
 // 登録済みの日付を事前取得。取得できない間は一括送信を禁止する。
+
 let batchRegistered = new Set();
+
 let batchRegisteredReady = false;
+
 let batchRegisteredLoading = false;
+
 let batchRequestVersion = 0;
+
 let batchRegisteredKey = '';
+
+
+
 async function loadBatchRegisteredDates() {
+
   if (document.getElementById('batchForm').style.display === 'none' || batchSending) return;
+
   const employee = employeeSelect.value;
+
   const workType = workTypeSelect.value;
+
   const month = document.getElementById('batchMonth').value;
+
   const version = ++batchRequestVersion;
+
   batchRegisteredReady = false;
+
   batchRegisteredLoading = true;
+
   batchRegistered.clear();
+
   batchSelected.clear();
+
   batchRegisteredKey = '';
+
   renderBatchCalendar();
+
   if (!employee || !workType || !month) {
+
     batchRegisteredLoading = false;
+
     renderBatchCalendar();
+
     return;
+
   }
+
   try {
+
     const url = webAppUrl + '?action=getRegisteredDates&employee=' + encodeURIComponent(employee)
+
       + '&workType=' + encodeURIComponent(workType) + '&_=' + Date.now();
+
     const response = await fetch(url, {cache:'no-store'});
+
     if (!response.ok) throw new Error('HTTP ' + response.status);
+
     const result = await response.json();
+
     if (version !== batchRequestVersion) return;
+
     if (result.result !== 'success' || !Array.isArray(result.registeredDates)) {
+
       throw new Error('登録済み日付の取得結果が不正です。Apps Scriptの再デプロイを確認してください。');
+
     }
+
     batchRegistered = new Set(result.registeredDates);
+
     batchRegisteredKey = employee + '\n' + workType;
+
     batchRegisteredReady = true;
+
   } catch (error) {
+
     if (version !== batchRequestVersion) return;
+
     console.error('登録済み日付の取得に失敗', error);
+
     batchRegisteredReady = false;
+
   } finally {
+
     if (version === batchRequestVersion) {
+
       batchRegisteredLoading = false;
+
       renderBatchCalendar();
+
     }
+
   }
+
 }
+
+
+
 workTypeSelect.addEventListener('change', loadBatchRegisteredDates);
+
 employeeSelect.addEventListener('change', loadBatchRegisteredDates);
+
 // 一括入力：当日までの実績のみ。既存のGoogle側APIに1日ずつ送信する。
+
+
+
 const batchSelected = new Set();
+
+
+
 let batchSending = false;
+
+
+
 function localDayString(d) {
+
+
+
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+
+
 }
+
+
+
 function batchToday() { return localDayString(new Date()); }
+
+
+
 function batchPeriod(month) {
+
+
+
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return null;
+
+
+
   const [year, mon] = month.split('-').map(Number);
+
+
+
   const start = new Date(year, mon - 2, 21);
+
+
+
   const end = new Date(year, mon - 1, 20);
+
+
+
   return { start, end, startString:localDayString(start), endString:localDayString(end) };
+
+
+
 }
+
+
+
 function currentBatchMonth() {
+
+
+
   const now = new Date();
+
+
+
   const closing = new Date(now.getFullYear(), now.getMonth() + (now.getDate() > 20 ? 1 : 0), 1);
+
+
+
   return localDayString(closing).slice(0,7);
+
+
+
 }
+
+
+
 function updateInputMode() {
   applyDeviceAccess();
 }
+
 // 履歴の表示月（21日締め）
+
 const todayForHistory = new Date();
+
 let historyMonth = new Date(
+
   todayForHistory.getFullYear(),
+
   todayForHistory.getMonth() +
+
     (todayForHistory.getDate() >= 21 ? 1 : 0),
+
   1
+
 );
+
+
+
 // 表示月を変更
+
 function changeHistoryMonth(offset) {
+
   historyMonth.setMonth(historyMonth.getMonth() + offset);
+
   updateHistoryMonthTitle();
+
   loadHistory();
+
 }
+
+
+
 // 「令和8年10月分」などの表示
+
 function updateHistoryMonthTitle() {
+
   const year = historyMonth.getFullYear();
+
   const month = historyMonth.getMonth() + 1;
+
   const reiwa = year - 2018;
+
+
+
   document.getElementById("historyMonthTitle").textContent =
+
     `令和${reiwa}年${month}月分`;
+
 }
+
 // 出勤記録の修正画面
+
 let editingRecordId = null;
+
 function openEditForm(item) {
+
   editingRecordId = item.id;
+
   const editForm = document.getElementById("editForm");
+
   const editSite = document.getElementById("editSite");
+
   const editWorkType = document.getElementById("editWorkType");
+
   const siteSelect = document.getElementById("site");
+
+
+
   // 現場一覧をコピー
+
   editSite.innerHTML = siteSelect.innerHTML;
+
+
+
   // 現在の登録内容を選択
+
   editSite.value = item.site;
+
   editWorkType.value = item.workType;
+
+
+
   // 日付を表示
+
   document.getElementById("editDate").textContent =
+
     "出勤日：" + item.date;
+
+
+
   // 修正画面を表示
+
   editForm.style.display = "block";
+
   editForm.scrollIntoView({
+
     behavior: "smooth",
+
     block: "start"
+
   });
+
 }
 async function saveAttendanceEdit() {
   const employee = document.getElementById("employee").value;
@@ -597,13 +3205,17 @@ async function saveAttendanceEdit() {
   const workType = document.getElementById("editWorkType").value;
   const deviceId = localStorage.getItem("attendanceDeviceId");
   const button = document.getElementById("saveEditButton");
+
   if (!editingRecordId || !employee || !site || !workType || !deviceId) {
     alert("修正に必要な情報が不足しています");
     return;
   }
+
   if (!confirm("この内容で出勤記録を修正しますか？")) return;
+
   button.disabled = true;
   button.textContent = "保存中...";
+
   try {
     const response = await fetch(webAppUrl, {
       method: "POST",
@@ -616,14 +3228,18 @@ async function saveAttendanceEdit() {
         workType: workType
       })
     });
+
     const result = await response.json();
+
     if (result.result !== "success") {
       throw new Error(result.message || "修正に失敗しました");
     }
+
     alert("出勤記録を修正しました");
     document.getElementById("editForm").style.display = "none";
     editingRecordId = null;
     await loadHistory();
+
   } catch (error) {
     alert(error.message);
   } finally {
@@ -631,305 +3247,1048 @@ async function saveAttendanceEdit() {
     button.textContent = "保存する";
   }
 }
+
 async function loadHistory() {
+
   const list = document.getElementById("historyList");
+
   const employee = document.getElementById("employee").value;
+
+
+
   if (!employee) {
+
     list.textContent = "社員を選択してください";
+
     return;
+
   }
+
+
+
   list.textContent = "履歴を読み込み中...";
+
+
+
   try {
+
     const url = webAppUrl
+
       + "?action=getHistory&employee="
+
       + encodeURIComponent(employee);
+
+
+
     const response = await fetch(url);
+
     const data = await response.json();
+
+
+
     if (data.result !== "success") {
+
       throw new Error("履歴の取得に失敗しました");
+
     }
+
+
+
     list.innerHTML = "";
+
+
+
 data.history = data.history || [];
+
     const table = document.createElement("table");
+
 table.style.width = "100%";
+
 table.style.borderCollapse = "collapse";
+
 table.style.marginTop = "10px";
+
+
+
 // 見出し
+
 const header = table.insertRow();
+
+
+
 ["日付", "曜", "現場名", "修正"].forEach(text => {
+
   const th = document.createElement("th");
+
   th.textContent = text;
+
   th.style.border = "1px solid #aaa";
+
   th.style.padding = "8px";
+
   th.style.background = "#f0f0f0";
+
   header.appendChild(th);
+
 });
+
 // 選択した締め月の期間
+
 const startDate = new Date(
+
   historyMonth.getFullYear(),
+
   historyMonth.getMonth() - 1,
+
   21
+
 );
+
+
+
 const endDate = new Date(
+
   historyMonth.getFullYear(),
+
   historyMonth.getMonth(),
+
   20
+
 );
+
+
+
 // 締め期間内の履歴だけ表示
+
 data.history = data.history.filter(item => {
+
   const [year, month, day] = item.date.split("-").map(Number);
+
   const date = new Date(year, month - 1, day);
+
+
+
   return date >= startDate && date <= endDate;
+
 });
+
 // 出勤履歴
+
 // 21日〜20日までの日付をすべて作成
+
 const calendarHistory = [];
+
+
+
 for (
+
   let date = new Date(startDate);
+
   date <= endDate;
+
   date.setDate(date.getDate() + 1)
+
 ) {
+
   const year = date.getFullYear();
+
   const month = String(date.getMonth() + 1).padStart(2, "0");
+
   const day = String(date.getDate()).padStart(2, "0");
+
   const dateKey = `${year}-${month}-${day}`;
+
+
+
   const records = data.history.filter(item => item.date === dateKey);
+
+
+
   if (records.length > 0) {
+
     calendarHistory.push(...records);
+
   } else {
+
     calendarHistory.push({
+
       date: dateKey,
+
       site: "",
+
       workType: ""
+
     });
+
   }
+
 }
+
+
+
 // 日付順に表示
+
 calendarHistory.forEach(item => {
+
   const row = table.insertRow();
+
+
+
   // 日付を「9月21日」の形式にする
+
 const [year, month, day] = item.date.split("-").map(Number);
+
 const date = new Date(year, month - 1, day);
+
+
+
 const dateCell = row.insertCell();
+
 dateCell.textContent = `${month}月${day}日`;
+
 dateCell.style.border = "1px solid #aaa";
+
 dateCell.style.padding = "8px 4px";
+
 dateCell.style.whiteSpace = "nowrap";
+
+
+
 // 曜日を表示する
+
 const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+
 const weekday = date.getDay();
+
+
+
 const weekdayCell = row.insertCell();
+
 weekdayCell.textContent = weekdays[weekday];
+
 weekdayCell.style.border = "1px solid #aaa";
+
 weekdayCell.style.padding = "8px 4px";
+
 weekdayCell.style.textAlign = "center";
+
+
+
 // 日曜日は赤、土曜日は青
+
 if (weekday === 0) {
+
   weekdayCell.style.color = "red";
+
 } else if (weekday === 6) {
+
   weekdayCell.style.color = "blue";
+
 }
+
+
+
   const siteCell = row.insertCell();
+
   siteCell.textContent = item.site || "";
+
   siteCell.style.border = "1px solid #aaa";
+
   siteCell.style.padding = "8px";
+
+
+
   // 夜勤は赤字、通常勤務は黒字
+
   siteCell.style.color =
+
     item.workType === "夜勤" ? "red" : "black";
+
     // 修正ボタン
+
 const editCell = row.insertCell();
+
 editCell.style.padding = "8px";
+
 editCell.style.border = "1px solid #aaa";
+
 editCell.style.textAlign = "center";
+
+
+
 if (item.id) {
+
   const editButton = document.createElement("button");
+
   editButton.textContent = "修正";
+
   editButton.style.width = "100%";
+
 editButton.style.padding = "10px 2px";
+
 editButton.style.fontSize = "16px";
+
 editButton.style.borderRadius = "8px";
+
   editButton.type = "button";
+
+
+
  editButton.onclick = function() {
+
   openEditForm(item);
+
 };
+
+
+
   editCell.appendChild(editButton);
+
 }
+
 });
+
+
+
 list.appendChild(table);
+
+
+
   } catch (error) {
+
     list.textContent = "履歴を取得できませんでした";
+
     console.error(error);
+
   }
+
 }
+
 function toggleHistory() {
+
   const form = document.getElementById("historyForm");
+
   const button = document.getElementById("historyButton");
+
+
+
   if (form.style.display === "none") {
+
   form.style.display = "block";
+
   button.textContent = "自分の出勤履歴を見る ▲";
+
   updateHistoryMonthTitle();
+
   loadHistory();
+
   } else {
+
     form.style.display = "none";
+
     button.textContent = "自分の出勤履歴を見る ▼";
+
   }
+
 }
+
 function toggleBatchForm() {
   if (!isDeviceApproved()) return;
+
+
+
   if (batchSending) return;
+
+
+
   const form = document.getElementById('batchForm');
+
+
+
   const opening = form.style.display === 'none';
+
+
+
   form.style.display = opening ? 'block' : 'none';
+
   if (!opening) { ++batchRequestVersion; batchRegisteredReady=false; }
+
+
+
   if (opening) {
+
+
+
     document.getElementById('lateForm').style.display = 'none';
+
+
+
     document.getElementById('lateButton').textContent = '前日までの\n出勤入力 ⌄';
+
+
+
     const month = document.getElementById('batchMonth');
+
+
+
     month.max = currentBatchMonth();
+
+
+
     if (!month.value) month.value = month.max;
+
+
+
         renderBatchCalendar();
 loadBatchRegisteredDates();
+    
+
+
+
   }
+
+
+
   document.getElementById('batchButton').textContent = opening ? 'まとめて\n出勤入力 ⌃' : 'まとめて\n出勤入力 ⌄';
+
+
+
   updateInputMode();
+
+
+
 }
+
+
+
 function renderBatchCalendar() {
+
+
+
   const month = document.getElementById('batchMonth').value;
+
+
+
   const calendar = document.getElementById('batchCalendar');
+
+
+
   calendar.replaceChildren();
+
+
+
   const period = batchPeriod(month);
+
+
+
   if (!period || month > currentBatchMonth()) {
+
+
+
     document.getElementById('batchSummary').textContent = '当日を含む締め期間までを選択してください';
+
+
+
     document.getElementById('batchSubmitButton').disabled = true;
+
+
+
     return;
+
+
+
   }
+
+
+
   const title=document.createElement('div');
+
+
+
   title.style.cssText='grid-column:1/-1;text-align:center;font-size:13px;font-weight:800;color:#73695c;padding:4px 0';
+
+
+
   title.textContent=`${period.start.getFullYear()}年${period.start.getMonth()+1}月21日 〜 ${period.end.getFullYear()}年${period.end.getMonth()+1}月20日`;
+
+
+
   calendar.appendChild(title);
+
+
+
   ['日','月','火','水','木','金','土'].forEach(name=>{
+
+
+
     const el=document.createElement('div');el.className='dayhead';el.textContent=name;calendar.appendChild(el);
+
+
+
   });
+
+
+
   for(let i=0;i<period.start.getDay();i++) {
+
+
+
     const blank=document.createElement('div');blank.className='blank';calendar.appendChild(blank);
+
+
+
   }
+
+
+
   for(let d=new Date(period.start);d<=period.end;d.setDate(d.getDate()+1)) {
+
+
+
     const date=localDayString(d);
+
+
+
     const btn=document.createElement('button');btn.type='button';
+
+
+
     btn.textContent=d.getDate()===1?`${d.getMonth()+1}/1`:String(d.getDate());
+
+
+
     btn.title=date;
+
+
+
     const registered=batchRegistered.has(date);
+
     btn.disabled=date>batchToday() || batchSending || !batchRegisteredReady || registered;
+
     if (registered) { btn.title=date+' 登録済み（選択不可）'; btn.setAttribute('aria-label',date+' 登録済み'); }
+
+
+
     btn.className=registered?'registered':(batchSelected.has(date)?'selected':'');
+
+
+
     btn.setAttribute('aria-pressed',batchSelected.has(date)?'true':'false');
+
+
+
     btn.onclick=()=>{if(!batchRegisteredReady || registered)return;if(batchSelected.has(date))batchSelected.delete(date);else batchSelected.add(date);renderBatchCalendar();};
+
+
+
     calendar.appendChild(btn);
+
+
+
   }
+
+
+
   updateBatchSummary();
+
+
+
 }
+
+
+
 function selectBatchDays(mode) {
+
+
+
   if(batchSending)return;
+
+
+
   const period=batchPeriod(document.getElementById('batchMonth').value);
+
+
+
   if(!period || document.getElementById('batchMonth').value>currentBatchMonth())return;
+
+
+
   for(let d=new Date(period.start);d<=period.end;d.setDate(d.getDate()+1)) {
+
+
+
     const date=localDayString(d);
+
+
+
     batchSelected.delete(date);
+
+
+
     if(date>batchToday() || batchRegistered.has(date))continue;
+
+
+
     const weekday=d.getDay();
+
+
+
     if(mode==='all'||(mode==='weekdays'&&weekday>=1&&weekday<=5)||(mode==='monSat'&&weekday>=1&&weekday<=6))batchSelected.add(date);
+
+
+
   }
+
+
+
   renderBatchCalendar();
+
+
+
 }
+
+
+
 function selectedBatchDates() {
+
+
+
   const period=batchPeriod(document.getElementById('batchMonth').value);
+
+
+
   if(!period)return [];
+
+
+
   return [...batchSelected].filter(d=>d>=period.startString&&d<=period.endString&&d<=batchToday()&&!batchRegistered.has(d)&&batchRegisteredReady).sort();
+
+
+
 }
+
+
+
 function updateBatchSummary() {
+
+
+
   const selected=selectedBatchDates();
+
+
+
   document.getElementById('batchSummary').textContent=!batchRegisteredReady?(batchRegisteredLoading?'登録状況を確認中...':'登録状況を取得できません。Apps Scriptの再デプロイと通信を確認してください。'):selected.length?`${selected.length}日選択：${selected.map(d=>Number(d.slice(5,7))+'/'+Number(d.slice(-2))).join('、')}`:'日付を選択してください';
+
+
+
   document.getElementById('batchSubmitButton').disabled=!isDeviceApproved()||!selected.length||batchSending||!batchRegisteredReady;
+
+
+
 }
+
+
+
 document.getElementById('batchMonth').addEventListener('change',()=>{batchSelected.clear();loadBatchRegisteredDates();});
+
+
+
 async function submitBatchCheckIn() {
   if (!isDeviceApproved()) { alert("この端末は承認されていません"); return; }
+
+
+
   if(batchSending)return;
+
+
+
   const month=document.getElementById('batchMonth').value;
+
+
+
   const dates=selectedBatchDates();
+
+
+
   const employee=employeeSelect.value, workType=workTypeSelect.value, site=siteSelect.value;
+
+
+
   if(!employee||!site){alert('社員名と現場名を選択してください');return;}
+
   if(batchRegisteredKey !== employee+'\n'+workType){alert('登録状況を再確認してください');await loadBatchRegisteredDates();return;}
+
+
+
   if(!dates.length){alert('出勤日を選択してください');return;}
+
+
+
   if(!confirm(`${employee}\n${workType} / ${site}\n${dates.length}日分を登録します。\n${dates.join('、')}\nよろしいですか？`))return;
+
+
+
   batchSending=true;
+
+
+
   const submit=document.getElementById('batchSubmitButton');
+
+
+
   const message=document.getElementById('message');
+
+
+
   const results=document.getElementById('batchSummary');
+
+
+
   const workTypeInput=document.getElementById('workType');
+
+
+
   const siteInput=document.getElementById('site');
+
+
+
   workTypeInput.disabled=true;siteInput.disabled=true;
+
+
+
   document.getElementById('batchMonth').disabled=true;
+
+
+
   document.querySelectorAll('.batch-actions button').forEach(b=>b.disabled=true);
+
+
+
   updateInputMode();renderBatchCalendar();
+
+
+
   let success=0, duplicate=0, failed=[];
+
+
+
   for(let i=0;i<dates.length;i++) {
+
+
+
     const date=dates[i];
+
+
+
     submit.textContent=`送信中... ${i+1}/${dates.length}`;
+
+
+
     results.textContent=`${i+1}/${dates.length}件目を送信中：${date}`;
+
+
+
     try {
+
+
+
       // 当日分は通常の出勤API、過去日は後日申請APIを利用
+
+
+
 const payload={
+
   employee,
+
   workType,
+
   site,
+
   deviceId: localStorage.getItem("attendanceDeviceId")
+
 };
+
       if(date!==batchToday()){payload.workDate=date;payload.action='lateCheckIn';}
+
+
+
       const response=await fetch(webAppUrl,{method:'POST',body:JSON.stringify(payload)});
+
+
+
       if(!response.ok)throw new Error('HTTP '+response.status);
+
+
+
       const result=await response.json();
+
+
+
       if(result.result==='success'){success++;batchSelected.delete(date);}
+
+
+
       else if(result.result==='duplicate'){duplicate++;batchSelected.delete(date);}
+
+
+
       else {failed.push(date);}
+
+
+
     } catch(e){failed.push(date);console.error('一括入力失敗',date,e);}
+
+
+
   }
+
+
+
   batchSending=false;
+
+
+
   workTypeInput.disabled=false;siteInput.disabled=false;
+
+
+
   document.getElementById('batchMonth').disabled=false;
+
+
+
   document.querySelectorAll('.batch-actions button').forEach(b=>b.disabled=false);
+
+
+
   submit.textContent='選択した日をまとめて登録';
+
+
+
   renderBatchCalendar();updateInputMode();
+
+
+
   const report=`一括入力結果：登録成功 ${success}件／登録済み ${duplicate}件／失敗 ${failed.length}件`;
+
+
+
   results.textContent=report+(failed.length?`\n失敗日：${failed.join('、')}（選択を残しています）`:'');
+
 if (failed.length === 0) {
   batchOpen = false;
   document.getElementById('batchForm').style.display = 'none';
   updateInputMode();
 }
+
+
+
   message.textContent=report;
+
+
+
   message.style.background=failed.length?'#fff3e0':'#e8f5e9';
+
+
+
   message.style.color=failed.length?'#a45b00':'#2e7d32';
+
+
+
 }
+
+
+
+
+
+
+
 function changeEmployee() {
+
+
+
+
+
+
+
   const password = prompt("社員設定パスワードを入力してください");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (password === null) {
+
+
+
+
+
+
+
     return;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (password !== "1565") {
+
+
+
+
+
+
+
     alert("パスワードが違います");
+
+
+
+
+
+
+
     return;
+
+
+
+
+
+
+
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const currentEmployee = localStorage.getItem("employeeName");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   document.getElementById("employeeDisplay").style.display = "none";
+
+
+
+
+
+
+
   employeeSelect.style.display = "block";
+
+
+
+
+
+
+
   employeeSelect.value = currentEmployee || "";
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
 // アプリ全体を再読み込み
+
+
+
+
+
+
+
 function refreshApp() {
+
+
+
+
+
+
+
   window.location.reload();
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
 updateDeviceRegistrationDisplay();
 </script>
+
+
+
 </body>
+
+
+
 </html>
