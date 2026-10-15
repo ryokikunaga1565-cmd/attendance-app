@@ -4074,6 +4074,12 @@ const payload={
 
   results.textContent=report+(failed.length?`\n失敗日：${failed.join('、')}（選択を残しています）`:'');
 
+if (failed.length === 0) {
+  batchOpen = false;
+  document.getElementById('batchForm').style.display = 'none';
+  updateInputMode();
+}
+
 
 
   message.textContent=report;
