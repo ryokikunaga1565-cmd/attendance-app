@@ -1,16 +1,19 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>出勤簿 管理者画面</title>
-
   <style>
+    * { box-sizing: border-box; }
+
     body {
       font-family: sans-serif;
       background: #f5f6f8;
       margin: 0;
       padding: 20px;
+      color: #222;
     }
 
     .container {
@@ -31,5 +34,57 @@
       box-shadow: 0 2px 8px #00000010;
     }
 
+    .status {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .request {
+      border-top: 1px solid #ddd;
+      padding: 16px 0;
+    }
+
     button {
-      padding: 
+      padding: 14px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .refresh {
+      background: #e8edf5;
+      width: 100%;
+    }
+
+    .approve {
+      background: #1677e8;
+      color: white;
+      width: 100%;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>出勤簿 管理者画面</h1>
+
+    <div class="panel">
+      <h2>端末登録申請</h2>
+      <p class="status" id="status">
+        GASとの接続はまだ設定されていません
+      </p>
+
+      <button class="refresh" type="button" disabled>
+        申請一覧を更新（準備中）
+      </button>
+
+      <div id="requestList">
+        <p class="status">
+          接続設定後、ここに承認待ちの申請を表示します。
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
