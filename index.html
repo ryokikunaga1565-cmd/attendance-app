@@ -519,7 +519,7 @@ function applyDeviceAccess() {
 async function updateDeviceRegistrationDisplay() {
   const version = ++deviceCheckVersion;
   deviceApproved = false;
-  applyDeviceAccess();
+document.getElementById("deviceRegistration").style.display = "none";
   const employee = localStorage.getItem("employeeName");
   const currentDeviceId = localStorage.getItem("attendanceDeviceId");
   if (!employee || !currentDeviceId) return;
