@@ -183,10 +183,19 @@ button{cursor:pointer}
 .batch-calendar .dayhead.holiday{background:#fde8e8;color:#994747;border-radius:5px}
 .batch-holiday-status{font-size:12px;color:#756a5e;margin:6px 0}
 
+
+#lateSubmitButton,#batchSubmitButton{margin:0 0 12px}
+#message:not(:empty){padding:16px;margin:12px 0;border:1px solid #c6dfce;text-align:left}
+#message .result-title{font-size:19px;font-weight:850;margin-bottom:8px}
+#message .result-detail{font-size:14px;font-weight:500;white-space:pre-line;overflow-wrap:anywhere}
+#message .result-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+#message .result-count{background:#ffffffb3;border-radius:8px;padding:10px 4px;text-align:center;font-size:12px}
+#message .result-count strong{display:block;font-size:24px}
+#message .result-count.failure{color:#a12b2b}
 </style></head><body>
 
 
-<div class="container"><header class="hero"><div class="topline"><div class="brand-title"><img class="brand-logo" src="data:image/png;base64,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" alt="菊永建設のロゴ"><h1>出勤簿</h1><img class="brand-logo" src="data:image/png;base64,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" alt="アールシーのロゴ"></div><button class="refresh" type="button" onclick="refreshApp()">↻ 更新</button></div><div class="today" id="todayDate">日付を確認中...</div></header>
+<div class="container"><header class="hero"><div class="topline"><div class="brand-title"><img class="brand-logo" src="data:image/png;base64,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" alt="菊永建設のロゴ"><h1>出勤簿</h1><img class="brand-logo" src="data:image/png;base64,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" alt="アールシーのロゴ"></div><button class="refresh" type="button" onclick="refreshApp()">↻ 更新</button></div><div class="today" id="todayDate">日付を確認中...</div></header><div id="message" role="status" aria-live="polite"></div>
 
 
 <main class="main">
@@ -247,11 +256,11 @@ button{cursor:pointer}
 
 
 
-<div id="lateForm" style="display:none"><label for="workDate">出勤日</label><input type="date" id="workDate"><button id="lateSubmitButton" type="button" onclick="submitLateCheckIn()">後日申請する</button></div>
+<div id="lateForm" style="display:none"><button id="lateSubmitButton" type="button" onclick="submitLateCheckIn()">後日申請する</button><label for="workDate">出勤日</label><input type="date" id="workDate"></div>
 
 
 
-<div id="batchForm" style="display:none"><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択（土日祝除外）</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><button id="batchUndoButton" type="button" onclick="undoBatchSelection()" disabled style="margin:0 0 8px;padding:8px 14px;border:1px solid #d6cbb9;border-radius:8px;background:#faf8f3">選択を戻す</button><div id="batchHolidayStatus" class="batch-holiday-status" role="status"></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
+<div id="batchForm" style="display:none"><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択<br><span style="font-size:11px">（土日祝除外）</span></button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><button id="batchUndoButton" type="button" onclick="undoBatchSelection()" disabled style="margin:0 0 8px;padding:8px 14px;border:1px solid #d6cbb9;border-radius:8px;background:#faf8f3">選択を戻す</button><div id="batchHolidayStatus" class="batch-holiday-status" role="status"></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div></div>
 
 <!-- 出勤履歴 -->
 
@@ -285,7 +294,7 @@ button{cursor:pointer}
 
 </div>
 
-<div id="message" role="status" aria-live="polite"></div><button class="settings" type="button" onclick="changeEmployee()">社員設定を変更</button>
+<button class="settings" type="button" onclick="changeEmployee()">社員設定を変更</button>
 
 
 
@@ -1118,7 +1127,29 @@ document.getElementById("requestDeviceButton")
   .addEventListener("click", requestDeviceRegistration);
 
 
-  async function checkIn() {
+  
+function attendanceResult(title, detail, counts) {
+  const box=document.getElementById('message');
+  box.replaceChildren();
+  const heading=document.createElement('div');heading.className='result-title';heading.textContent=title;box.appendChild(heading);
+  if(counts) {
+    const grid=document.createElement('div');grid.className='result-counts';
+    ['登録成功','登録済み','失敗'].forEach((label,i)=>{
+      const card=document.createElement('div');card.className='result-count'+(i===2&&counts[i]?' failure':'');
+      const value=document.createElement('strong');value.textContent=counts[i]+'件';
+      card.appendChild(value);card.appendChild(document.createTextNode(label));grid.appendChild(card);
+    });
+    box.appendChild(grid);
+  }
+  const body=document.createElement('div');body.className='result-detail';body.textContent=detail;box.appendChild(body);
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function selectedSiteLabel() {
+  const select=document.getElementById('site');
+  return select.selectedOptions.length ? select.selectedOptions[0].textContent : '';
+}
+
+async function checkIn() {
   if (!isDeviceApproved()) { alert("この端末は承認されていません"); return; }
 
 
@@ -1475,15 +1506,7 @@ deviceId: localStorage.getItem("attendanceDeviceId")
 
 
 
-      message.textContent =
-
-
-
-
-
-
-
-        "⚠ 本日はすでに「" + workType + "」で出勤登録されています";
+      attendanceResult("登録済みです", "本日はすでに「"+workType+"」で登録されています。");
 
 
 
@@ -1563,15 +1586,7 @@ message.style.color = "#c62828";
 
 
 
-      message.textContent =
-
-
-
-
-
-
-
-        "✓ " + employee + "　出勤しました　" + time;
+      attendanceResult("✓ 出勤を登録しました", employee+" ／ "+workType+"\n"+selectedSiteLabel()+"\n"+batchToday()+"　受付 "+time);
 
 
 
@@ -1635,7 +1650,7 @@ message.style.color = "#2e7d32";
 
 
 
-    message.textContent = "⚠ 出勤記録を送信できませんでした";
+    attendanceResult("送信を確認できませんでした", "通信状態と出勤履歴を確認してください。");
 
 
 
@@ -2426,7 +2441,7 @@ try {
 
 
 
-      message.textContent = "⚠ この日はすでに同じ勤務区分で登録されています";
+      attendanceResult("登録済みです", "この日はすでに同じ勤務区分で登録されています。");
 
 
 
@@ -2482,7 +2497,7 @@ message.style.color = "#c62828";
 
 
 
-      message.textContent = "✓ 後日申請しました";
+      attendanceResult("✓ 後日申請を登録しました", employee+" ／ "+workType+"\n"+selectedSiteLabel()+"\n出勤日："+document.getElementById("workDate").value);
 
 
 
@@ -2546,7 +2561,7 @@ message.style.color = "#2e7d32";
 
 
 
-  message.textContent = "⚠ 後日申請を送信できませんでした";
+  attendanceResult("後日申請を確認できませんでした", "通信状態と出勤履歴を確認してください。");
 
 
 
@@ -3169,7 +3184,8 @@ const dateCell = row.insertCell();
 
 dateCell.textContent = `${month}月${day}日`;
 
-dateCell.style.border = "1px solid #aaa";
+dateCell.style.textAlign = "center";
+ dateCell.style.border = "1px solid #aaa";
 
 dateCell.style.padding = "8px 4px";
 
@@ -3215,7 +3231,8 @@ if (weekday === 0) {
 
   siteCell.textContent = [item.site, item.siteCode].filter(Boolean).join(" ／ ");
 
-  siteCell.style.border = "1px solid #aaa";
+  siteCell.style.textAlign = "center";
+ siteCell.style.border = "1px solid #aaa";
 
   siteCell.style.padding = "8px";
 
@@ -3849,7 +3866,10 @@ if (failed.length === 0) {
 
 
 
-  message.textContent=report;
+  attendanceResult(failed.length ? "一括入力：確認が必要です" : "✓ 一括入力が完了しました",
+    employee+" ／ "+workType+"\n"+selectedSiteLabel()+
+    (failed.length ? "\n失敗日："+failed.join("、")+"\n未確認の日付は選択を残しています。出勤履歴を確認してください。" : ""),
+    [success,duplicate,failed.length]);
 
 
 
