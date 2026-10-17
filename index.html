@@ -237,7 +237,7 @@ button{cursor:pointer}
 
 
 
-<div id="batchForm" style="display:none"><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
+<div id="batchForm" style="display:none"><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択（土日祝除外）</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
 
 <!-- 出勤履歴 -->
 
@@ -3476,7 +3476,7 @@ function renderBatchCalendar() {
 
 
 
-    btn.onclick=()=>{if(!batchRegisteredReady || registered)return;if(batchSelected.has(date))batchSelected.delete(date);else batchSelected.add(date);renderBatchCalendar();};
+    btn.onclick=()=>{++batchSelectionRequest;if(!batchRegisteredReady || registered)return;if(batchSelected.has(date))batchSelected.delete(date);else batchSelected.add(date);renderBatchCalendar();};
 
 
 
@@ -3496,58 +3496,55 @@ function renderBatchCalendar() {
 
 
 
-function selectBatchDays(mode) {
-
-
-
-  if(batchSending)return;
-
-
-
-  const period=batchPeriod(document.getElementById('batchMonth').value);
-
-
-
-  if(!period || document.getElementById('batchMonth').value>currentBatchMonth())return;
-
-
-
-  for(let d=new Date(period.start);d<=period.end;d.setDate(d.getDate()+1)) {
-
-
-
-    const date=localDayString(d);
-
-
-
-    batchSelected.delete(date);
-
-
-
-    if(date>batchToday() || batchRegistered.has(date))continue;
-
-
-
-    const weekday=d.getDay();
-
-
-
-    if(mode==='all'||(mode==='weekdays'&&weekday>=1&&weekday<=5)||(mode==='monSat'&&weekday>=1&&weekday<=6))batchSelected.add(date);
-
-
-
-  }
-
-
-
-  renderBatchCalendar();
-
-
-
+let batchHolidayData = null;
+let batchSelectionRequest = 0;
+async function loadBatchHolidays() {
+  if(batchHolidayData) return batchHolidayData;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),15000);
+  try {
+    const response=await fetch(webAppUrl+"?action=getHolidays",{signal:controller.signal});
+    if(!response.ok) throw new Error("祝日取得エラー");
+    const data=await response.json();
+    if(data.result!=="success" || !data.holidays ||
+       !Number.isInteger(data.firstYear) || !Number.isInteger(data.lastYear))
+      throw new Error("祝日データを取得できません。社員用GASの更新・再デプロイを確認してください。");
+    batchHolidayData=data;
+    return data;
+  } finally { clearTimeout(timeout); }
 }
-
-
-
+async function selectBatchDays(mode) {
+  const request=++batchSelectionRequest;
+  if(batchSending || !batchRegisteredReady)return;
+  const month=document.getElementById('batchMonth').value;
+  const period=batchPeriod(month);
+  if(!period || month>currentBatchMonth())return;
+  let holidays={};
+  if(mode==='weekdays') {
+    try {
+      const data=await loadBatchHolidays();
+      if(period.start.getFullYear()<data.firstYear || period.end.getFullYear()>data.lastYear)
+        throw new Error("この年の祝日データは未取得です。日付を手動で選択してください。");
+      holidays=data.holidays;
+    } catch(error) {
+      if(request===batchSelectionRequest) alert(error.name==="AbortError" ?
+        "祝日の取得がタイムアウトしました。選択は変更していません。もう一度お試しください。" :
+        error.message);
+      return;
+    }
+  }
+  if(request!==batchSelectionRequest || batchSending || !batchRegisteredReady ||
+     month!==document.getElementById('batchMonth').value)return;
+  for(let d=new Date(period.start);d<=period.end;d.setDate(d.getDate()+1)) {
+    const date=localDayString(d);
+    batchSelected.delete(date);
+    if(date>batchToday() || batchRegistered.has(date))continue;
+    const weekday=d.getDay();
+    if(mode==='all'||(mode==='weekdays'&&weekday>=1&&weekday<=5&&!holidays[date])||
+       (mode==='monSat'&&weekday>=1&&weekday<=6))batchSelected.add(date);
+  }
+  renderBatchCalendar();
+}
 function selectedBatchDates() {
 
 
@@ -3588,7 +3585,7 @@ function updateBatchSummary() {
 
 
 
-document.getElementById('batchMonth').addEventListener('change',()=>{batchSelected.clear();loadBatchRegisteredDates();});
+document.getElementById('batchMonth').addEventListener('change',()=>{++batchSelectionRequest;batchSelected.clear();loadBatchRegisteredDates();});
 
 
 
