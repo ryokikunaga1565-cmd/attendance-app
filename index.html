@@ -251,7 +251,7 @@ button{cursor:pointer}
 
 
 
-<div id="batchForm" style="display:none"><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択（土日祝除外）</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><div id="batchHolidayStatus" class="batch-holiday-status" role="status"></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
+<div id="batchForm" style="display:none"><label for="batchMonth">締め月（21日〜翌20日ではなく、前月21日〜当月20日）</label><input id="batchMonth" type="month"><div class="batch-actions"><button type="button" onclick="selectBatchDays('weekdays')">平日選択（土日祝除外）</button><button type="button" onclick="selectBatchDays('monSat')">月〜土選択</button><button type="button" onclick="selectBatchDays('all')">全選択</button><button type="button" onclick="selectBatchDays('none')">全解除</button></div><button id="batchUndoButton" type="button" onclick="undoBatchSelection()" disabled style="margin:0 0 8px;padding:8px 14px;border:1px solid #d6cbb9;border-radius:8px;background:#faf8f3">選択を戻す</button><div id="batchHolidayStatus" class="batch-holiday-status" role="status"></div><div id="batchCalendar" class="batch-calendar"></div><div id="batchSummary" class="batch-summary" aria-live="polite">日付を選択してください</div><button id="batchSubmitButton" type="button" onclick="submitBatchCheckIn()">選択した日をまとめて登録</button></div>
 
 <!-- 出勤履歴 -->
 
@@ -673,12 +673,20 @@ async function loadMasterData() {
 
 
     const siteDetails = data.siteDetails || data.sites.map(name => ({name,code:name}));
+    const siteGroups = new Map();
     siteDetails.forEach(function(site) {
       const option = document.createElement("option");
       option.value = site.code;
       option.dataset.siteName = site.name;
-      option.textContent = [site.company, site.type, site.type==="公共"?site.category:"", site.name, site.code].filter(Boolean).join(" ／ ");
-      siteSelect.appendChild(option);
+      option.textContent = [site.name, site.code].filter(Boolean).join(" ／ ");
+      const groupLabel=[site.company,site.type,site.type==="公共"?site.category:""].filter(Boolean).join(" ／ ");
+      if(groupLabel) {
+        if(!siteGroups.has(groupLabel)) {
+          const group=document.createElement("optgroup");
+          group.label=groupLabel;siteGroups.set(groupLabel,group);siteSelect.appendChild(group);
+        }
+        siteGroups.get(groupLabel).appendChild(option);
+      } else siteSelect.appendChild(option);
     });
 
 
@@ -2652,6 +2660,8 @@ async function loadBatchRegisteredDates() {
 
   batchRegisteredLoading = true;
 
+  batchUndoHistory.length=0;
+  ++batchSelectionRequest;
   batchRegistered.clear();
 
   batchSelected.clear();
@@ -3497,7 +3507,7 @@ function renderBatchCalendar() {
 
 
 
-    btn.onclick=()=>{++batchSelectionRequest;if(!batchRegisteredReady || registered)return;if(batchSelected.has(date))batchSelected.delete(date);else batchSelected.add(date);renderBatchCalendar();};
+    btn.onclick=()=>{++batchSelectionRequest;if(!batchRegisteredReady || registered)return;rememberBatchSelection();if(batchSelected.has(date))batchSelected.delete(date);else batchSelected.add(date);renderBatchCalendar();};
 
 
 
@@ -3527,6 +3537,29 @@ async function refreshBatchHolidayColors() {
   } catch(error) {
     status.textContent='祝日を取得できませんでした。土日のみ色分けしています。閉じて開き直すと再取得します。';
   }
+}
+const batchUndoHistory = [];
+function batchUndoKey() {
+  return [employeeSelect.value,workTypeSelect.value,document.getElementById('batchMonth').value].join("|");
+}
+function rememberBatchSelection() {
+  batchUndoHistory.push({key:batchUndoKey(),dates:[...batchSelected]});
+  if(batchUndoHistory.length>20) batchUndoHistory.shift();
+}
+function undoBatchSelection() {
+  ++batchSelectionRequest;
+  if(batchSending || !batchRegisteredReady)return;
+  const last=batchUndoHistory[batchUndoHistory.length-1];
+  if(!last || last.key!==batchUndoKey())return;
+  batchUndoHistory.pop();
+  const period=batchPeriod(document.getElementById('batchMonth').value);
+  if(!period)return;
+  batchSelected.clear();
+  last.dates.forEach(date=>{
+    if(date>=period.startString && date<=period.endString &&
+       date<=batchToday() && !batchRegistered.has(date))batchSelected.add(date);
+  });
+  renderBatchCalendar();
 }
 let batchHolidayData = null;
 let batchSelectionRequest = 0;
@@ -3567,6 +3600,7 @@ async function selectBatchDays(mode) {
   }
   if(request!==batchSelectionRequest || batchSending || !batchRegisteredReady ||
      month!==document.getElementById('batchMonth').value)return;
+  rememberBatchSelection();
   for(let d=new Date(period.start);d<=period.end;d.setDate(d.getDate()+1)) {
     const date=localDayString(d);
     batchSelected.delete(date);
@@ -3598,6 +3632,9 @@ function selectedBatchDates() {
 
 
 function updateBatchSummary() {
+  const lastUndo=batchUndoHistory[batchUndoHistory.length-1];
+  document.getElementById('batchUndoButton').disabled=batchSending || !batchRegisteredReady ||
+    !lastUndo || lastUndo.key!==batchUndoKey();
 
 
 
@@ -3656,6 +3693,7 @@ async function submitBatchCheckIn() {
 
 
 
+  batchUndoHistory.length=0;
   batchSending=true;
 
 
