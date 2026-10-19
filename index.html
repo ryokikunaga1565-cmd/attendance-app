@@ -192,7 +192,15 @@ button{cursor:pointer}
 #message .result-count{background:#ffffffb3;border-radius:8px;padding:10px 4px;text-align:center;font-size:12px}
 #message .result-count strong{display:block;font-size:24px}
 #message .result-count.failure{color:#a12b2b}
-.past-sites{margin:8px 0 12px;font-size:14px}.past-sites summary{cursor:pointer;color:#52627a;padding:5px 0}.past-sites select{margin-top:6px}.past-sites label{font-size:13px}
+/* 現場選択だけをコンパクトにする。 */
+#site,#pastSite,#editSite,#editPastSite{height:44px;padding:6px 10px;font-size:16px;line-height:1.25}
+#site option,#pastSite option,#editSite option,#editPastSite option{font-size:16px;line-height:1.2;padding:2px 8px}
+#site optgroup,#pastSite optgroup,#editSite optgroup,#editPastSite optgroup{font-size:14px;line-height:1.2}
+label[for="site"]{margin:7px 0 4px}
+.past-sites{margin:4px 0 0;font-size:14px}
+.past-sites summary{cursor:pointer;color:#52627a;padding:4px 0;line-height:1.3}
+.past-sites select{margin-top:3px}
+.past-sites .site-select-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style></head><body>
 
 
@@ -238,7 +246,7 @@ button{cursor:pointer}
 
 
 <section class="panel"><div class="section-title">本日の勤務内容</div><label for="workType">勤務区分</label><select id="workType"><option>通常勤務</option><option>夜勤</option></select><label for="site">現場名</label><select id="site"><option value="">読み込み中...</option></select>
-<details class="past-sites" id="pastSiteDetails"><summary>一覧にない現場を選ぶ</summary><label for="pastSite">必要なときに選ぶ現場</label><select id="pastSite" onchange="choosePastSite('site',this.value)"><option value="">△の現場はありません</option></select></details></section>
+<details class="past-sites" id="pastSiteDetails"><summary>一覧にない現場を選ぶ</summary><label for="pastSite" class="site-select-label">過去の現場を選択してください</label><select id="pastSite" onchange="choosePastSite('site',this.value)"><option value="">過去の現場を選択してください</option></select></details></section>
 
 
 <button id="checkInButton" type="button" onclick="checkIn()">✓ 出勤する</button>
@@ -320,8 +328,8 @@ button{cursor:pointer}
 
   <label for="editSite">現場名</label>
 
-  <select id="editSite" style="width:100%; padding:12px; margin:8px 0 16px;"></select>
-<details class="past-sites" id="editPastSiteDetails"><summary>一覧にない現場を選ぶ</summary><label for="editPastSite">必要なときに選ぶ現場</label><select id="editPastSite" onchange="choosePastSite('editSite',this.value)"><option value="">△の現場はありません</option></select></details>
+  <select id="editSite" style="width:100%; padding:6px 10px; margin:4px 0 8px;"></select>
+<details class="past-sites" id="editPastSiteDetails"><summary>一覧にない現場を選ぶ</summary><label for="editPastSite" class="site-select-label">過去の現場を選択してください</label><select id="editPastSite" onchange="choosePastSite('editSite',this.value)"><option value="">過去の現場を選択してください</option></select></details>
 
 
 
@@ -2882,7 +2890,7 @@ function appendSiteChoice(select, site, groups) {
   const option = document.createElement("option");
   option.value = site.code;
   option.dataset.siteName = site.name;
-  option.textContent = [site.name, site.code].filter(Boolean).join(" ／ ") + (site.status === "△" ? "（△）" : "");
+  option.textContent = [site.name, site.code].filter(Boolean).join(" ／ ");
   const label = [site.company, site.type, site.type === "公共" ? site.category : ""].filter(Boolean).join(" ／ ");
   if (!label) { select.appendChild(option); return; }
   if (!groups.has(label)) {
@@ -2904,7 +2912,7 @@ function renderPastSiteChoices(id) {
   const past = (window.attendanceSiteDetails || []).filter(s => s.status === "△");
   select.innerHTML = "";
   const placeholder = document.createElement("option");
-  placeholder.value = ""; placeholder.textContent = past.length ? "△の現場を選択してください" : "△の現場はありません";
+  placeholder.value = ""; placeholder.textContent = "過去の現場を選択してください";
   select.appendChild(placeholder); select.disabled = past.length === 0;
   const groups = new Map(); past.forEach(s => appendSiteChoice(select, s, groups));
 }
