@@ -192,6 +192,7 @@ button{cursor:pointer}
 #message .result-count{background:#ffffffb3;border-radius:8px;padding:10px 4px;text-align:center;font-size:12px}
 #message .result-count strong{display:block;font-size:24px}
 #message .result-count.failure{color:#a12b2b}
+.past-sites{margin:8px 0 12px;font-size:14px}.past-sites summary{cursor:pointer;color:#52627a;padding:5px 0}.past-sites select{margin-top:6px}.past-sites label{font-size:13px}
 </style></head><body>
 
 
@@ -236,7 +237,8 @@ button{cursor:pointer}
 <div class="employee-line"><span class="employee-label">登録者</span><div id="employeeDisplay" style="display:none"><div id="employeeName"></div></div><select id="employee" aria-label="登録者"><option value="">読み込み中...</option></select></div>
 
 
-<section class="panel"><div class="section-title">本日の勤務内容</div><label for="workType">勤務区分</label><select id="workType"><option>通常勤務</option><option>夜勤</option></select><label for="site">現場名</label><select id="site"><option value="">読み込み中...</option></select></section>
+<section class="panel"><div class="section-title">本日の勤務内容</div><label for="workType">勤務区分</label><select id="workType"><option>通常勤務</option><option>夜勤</option></select><label for="site">現場名</label><select id="site"><option value="">読み込み中...</option></select>
+<details class="past-sites" id="pastSiteDetails"><summary>△の現場から選ぶ</summary><label for="pastSite">必要なときに選ぶ現場</label><select id="pastSite" onchange="choosePastSite('site',this.value)"><option value="">△の現場はありません</option></select></details></section>
 
 
 <button id="checkInButton" type="button" onclick="checkIn()">✓ 出勤する</button>
@@ -319,6 +321,7 @@ button{cursor:pointer}
   <label for="editSite">現場名</label>
 
   <select id="editSite" style="width:100%; padding:12px; margin:8px 0 16px;"></select>
+<details class="past-sites" id="editPastSiteDetails"><summary>△の現場から選ぶ</summary><label for="editPastSite">必要なときに選ぶ現場</label><select id="editPastSite" onchange="choosePastSite('editSite',this.value)"><option value="">△の現場はありません</option></select></details>
 
 
 
@@ -681,22 +684,12 @@ async function loadMasterData() {
 
 
 
-    const siteDetails = data.siteDetails || data.sites.map(name => ({name,code:name}));
-    const siteGroups = new Map();
-    siteDetails.forEach(function(site) {
-      const option = document.createElement("option");
-      option.value = site.code;
-      option.dataset.siteName = site.name;
-      option.textContent = [site.name, site.code].filter(Boolean).join(" ／ ");
-      const groupLabel=[site.company,site.type,site.type==="公共"?site.category:""].filter(Boolean).join(" ／ ");
-      if(groupLabel) {
-        if(!siteGroups.has(groupLabel)) {
-          const group=document.createElement("optgroup");
-          group.label=groupLabel;siteGroups.set(groupLabel,group);siteSelect.appendChild(group);
-        }
-        siteGroups.get(groupLabel).appendChild(option);
-      } else siteSelect.appendChild(option);
-    });
+    if (data.siteStatusVersion !== 3) throw new Error("○△×対応の社員用GASを更新してください");
+    window.attendanceSiteDetails = data.siteDetails || [];
+    renderSiteChoices("site");
+    renderPastSiteChoices("pastSite");
+    renderPastSiteChoices("editPastSite");
+
 
 
 
@@ -2883,6 +2876,45 @@ function updateHistoryMonthTitle() {
 
 let editingRecordId = null;
 
+
+window.attendanceSiteDetails = [];
+function appendSiteChoice(select, site, groups) {
+  const option = document.createElement("option");
+  option.value = site.code;
+  option.dataset.siteName = site.name;
+  option.textContent = [site.name, site.code].filter(Boolean).join(" ／ ") + (site.status === "△" ? "（△）" : "");
+  const label = [site.company, site.type, site.type === "公共" ? site.category : ""].filter(Boolean).join(" ／ ");
+  if (!label) { select.appendChild(option); return; }
+  if (!groups.has(label)) {
+    const group = document.createElement("optgroup");
+    group.label = label; groups.set(label, group); select.appendChild(group);
+  }
+  groups.get(label).appendChild(option);
+}
+function renderSiteChoices(id, selectedCode = "") {
+  const select = document.getElementById(id);
+  select.innerHTML = '<option value="">選択してください</option>';
+  const groups = new Map();
+  (window.attendanceSiteDetails || []).filter(s => s.status === "○" || (s.status === "△" && s.code === selectedCode))
+    .forEach(s => appendSiteChoice(select, s, groups));
+  select.value = selectedCode;
+}
+function renderPastSiteChoices(id) {
+  const select = document.getElementById(id);
+  const past = (window.attendanceSiteDetails || []).filter(s => s.status === "△");
+  select.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = ""; placeholder.textContent = past.length ? "△の現場を選択してください" : "△の現場はありません";
+  select.appendChild(placeholder); select.disabled = past.length === 0;
+  const groups = new Map(); past.forEach(s => appendSiteChoice(select, s, groups));
+}
+function choosePastSite(target, code) {
+  if (!code) return;
+  renderSiteChoices(target, code);
+  document.getElementById(target).dispatchEvent(new Event("change", {bubbles:true}));
+  document.getElementById(target === "site" ? "pastSiteDetails" : "editPastSiteDetails").open = false;
+}
+
 function openEditForm(item) {
 
   editingRecordId = item.id;
@@ -2899,7 +2931,13 @@ function openEditForm(item) {
 
   // 現場一覧をコピー
 
-  editSite.innerHTML = siteSelect.innerHTML;
+  renderSiteChoices("editSite", item.siteCode || "");
+  if (!item.siteCode) {
+    const matching = (window.attendanceSiteDetails || []).filter(s => s.name === item.site);
+    if (matching.length === 1) renderSiteChoices("editSite", matching[0].code);
+  }
+  renderPastSiteChoices("editPastSite");
+  document.getElementById("editPastSiteDetails").open = false;
 
 
 
