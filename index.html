@@ -200,6 +200,30 @@ button{cursor:pointer}
 .past-sites select{margin-top:6px}
 .past-sites label{font-size:13px}
 .past-sites .site-select-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style><style id="mobile-site-picker-styles">
+/* スマホの現場選択。PCではJSが有効化しないため既存selectを使用する。 */
+select.mobile-site-picker-native{display:none!important}
+button.mobile-site-picker-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;border:2px solid #d8d1c7;border-radius:10px;background:#fff;color:#30383e;line-height:1.25;font-family:inherit;cursor:pointer}
+.mobile-site-picker-trigger:disabled{opacity:.6;cursor:not-allowed}
+.mobile-site-picker-trigger:focus-visible{outline:2px solid #bd9e60;outline-offset:1px}
+.mobile-site-picker-value{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+dialog.mobile-site-picker{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:100vw;max-width:640px;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom);border:0;background:#faf8f3;color:#30383e;overflow:hidden;font-family:inherit}
+dialog.mobile-site-picker[open]{display:flex;flex-direction:column}
+.mobile-site-picker::backdrop{background:#0006}
+.mobile-site-picker-header{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-shrink:0;min-height:48px;padding:4px 0;background:transparent;border:0}
+.mobile-site-picker-header h2{font-size:16px;line-height:1.3;margin:0;font-weight:800}
+button.mobile-site-picker-close{flex-shrink:0;min-width:64px;min-height:40px;padding:6px 9px;border:1px solid #d8d1c7;border-radius:8px;background:#fff;color:#30383e;font-size:14px;font-family:inherit}
+input.mobile-site-picker-search{flex-shrink:0;height:40px;min-height:40px;padding:7px 10px;margin:0;border:1px solid #d8d1c7;border-radius:8px;background:#fff;font-size:16px;font-weight:400}
+.mobile-site-picker-count{flex-shrink:0;margin:4px 2px;color:#73695c;font-size:11px;line-height:1.2}
+.mobile-site-picker-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#fff;border:1px solid #e4ded4;border-radius:8px;padding:0 5px 6px}
+.mobile-site-picker-group{margin:0;padding:5px 6px 3px;min-height:22px;box-sizing:border-box;font-size:11px;line-height:1.25;font-weight:750;color:#73695c;background:#f3f0e9}
+button.mobile-site-picker-option{display:block;width:100%;box-sizing:border-box;min-height:32px;padding:5px 8px;margin:0;border:0;border-bottom:1px solid #eee9e0;border-radius:0;background:#fff;color:#30383e;font-family:inherit;font-size:14px;line-height:1.25;font-weight:500;text-align:left;overflow-wrap:anywhere;cursor:pointer}
+button.mobile-site-picker-option.is-selected{background:#e6f1e9;color:#14523e;font-weight:750}
+button.mobile-site-picker-option.is-selected::after{content:' ✓'}
+button.mobile-site-picker-option:disabled{opacity:.5;cursor:not-allowed}
+.mobile-site-picker-option:focus-visible{outline:2px solid #14523e;outline-offset:-2px}
+.mobile-site-picker-empty{font-size:14px;padding:10px 8px;color:#73695c}
+
 </style></head><body>
 
 
@@ -4080,6 +4104,138 @@ updateDeviceRegistrationDisplay();
 
 
 
+<script id="mobile-site-picker-script">
+// スマホ用の一覧。既存selectの工事番号・changeイベントをそのまま利用する。
+function mobileSiteOptionGroups(select, query) {
+  const key = String(query || '').normalize('NFKC').toLocaleLowerCase('ja');
+  const groups = [];
+  for (const child of Array.from(select.children)) {
+    const options = child.tagName === 'OPTGROUP' ? Array.from(child.children) : [child];
+    const label = child.tagName === 'OPTGROUP' ? child.label : '';
+    const items = options.filter(option => option.tagName === 'OPTION' && option.value &&
+      (label + ' ' + option.textContent).normalize('NFKC').toLocaleLowerCase('ja').includes(key));
+    if (items.length) groups.push({ label, items });
+  }
+  return groups;
+}
+(function enableMobileSitePicker() {
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+  const smallApp = (navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) &&
+    window.matchMedia('(max-width: 768px)').matches;
+  if ((!coarse && !smallApp) || typeof HTMLDialogElement === 'undefined' || !HTMLDialogElement.prototype.showModal) return;
+  const dialog = document.createElement('dialog');
+  dialog.id = 'mobileSitePickerDialog'; dialog.className = 'mobile-site-picker';
+  dialog.setAttribute('aria-labelledby', 'mobileSitePickerTitle');
+  const header = document.createElement('header'); header.className = 'mobile-site-picker-header';
+  const title = document.createElement('h2'); title.id = 'mobileSitePickerTitle';
+  const close = document.createElement('button'); close.type = 'button'; close.textContent = '閉じる'; close.className = 'mobile-site-picker-close';
+  header.append(title, close);
+  const search = document.createElement('input'); search.type = 'search'; search.className = 'mobile-site-picker-search';
+  search.placeholder = '現場名・工事番号で検索'; search.setAttribute('aria-label', '現場名・工事番号で検索');
+  const count = document.createElement('p'); count.className = 'mobile-site-picker-count'; count.setAttribute('role', 'status');
+  const list = document.createElement('div'); list.className = 'mobile-site-picker-list';
+  dialog.append(header, search, count, list); document.body.append(dialog);
+  let active = null, previousOverflow = '', returnFocus = null;
+  const entries = new Map();
+  function sync(entry) {
+    const option = entry.select.options[entry.select.selectedIndex];
+    entry.value.textContent = option ? option.textContent : '選択してください';
+    entry.button.disabled = entry.select.disabled;
+    entry.button.setAttribute('aria-label', entry.title + '：' + entry.value.textContent);
+  }
+  function render() {
+    if (!active) return;
+    list.replaceChildren();
+    const groups = mobileSiteOptionGroups(active.select, search.value);
+    let total = 0;
+    for (const group of groups) {
+      const section = document.createElement('div');
+      if (group.label) {
+        const heading = document.createElement('h3'); heading.className = 'mobile-site-picker-group'; heading.textContent = group.label; section.append(heading);
+        section.setAttribute('role', 'group'); section.setAttribute('aria-label', group.label);
+      }
+      for (const option of group.items) {
+        total++;
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'mobile-site-picker-option';
+        const selected = option.value === active.select.value;
+        button.textContent = option.textContent;
+        button.disabled = option.disabled || option.parentElement.disabled === true;
+        button.setAttribute('aria-pressed', String(selected));
+        if (selected) button.classList.add('is-selected');
+        button.onclick = () => {
+          if (!active || active.select.disabled) return;
+          const entry = active;
+          entry.select.value = option.value;
+          entry.select.dispatchEvent(new Event('change', { bubbles: true }));
+          sync(entry);
+          if (entry.select.id === 'pastSite') returnFocus = entries.get('site')?.button || entry.button;
+          if (entry.select.id === 'editPastSite') returnFocus = entries.get('editSite')?.button || entry.button;
+          dialog.close();
+        };
+        section.append(button);
+      }
+      list.append(section);
+    }
+    count.textContent = total + '件';
+    if (!total) {
+      const empty = document.createElement('p'); empty.className = 'mobile-site-picker-empty';
+      empty.textContent = search.value ? '該当する現場がありません。' : '選択できる現場はありません。'; list.append(empty);
+    }
+  }
+  function open(entry) {
+    if (entry.select.disabled || dialog.open) return;
+    active = entry; title.textContent = entry.title; search.value = ''; render();
+    previousOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; returnFocus = entry.button;
+    entry.button.setAttribute('aria-expanded', 'true');
+    dialog.showModal(); list.scrollTop = 0;
+    // 最初から検索欄にフォーカスするとキーボードで一覧が狭くなるため、閉じるボタンに置く。
+    close.focus({ preventScroll: true });
+  }
+  close.onclick = () => dialog.close();
+  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('close', () => {
+    document.body.style.overflow = previousOverflow;
+    if (active) active.button.setAttribute('aria-expanded', 'false');
+    returnFocus?.focus({ preventScroll: true }); active = null; returnFocus = null;
+  });
+  search.addEventListener('input', render);
+  list.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const buttons = Array.from(list.querySelectorAll('button:not(:disabled)'));
+    const index = buttons.indexOf(document.activeElement);
+    if (index < 0 || !buttons.length) return;
+    event.preventDefault(); const step = event.key === 'ArrowDown' ? 1 : -1;
+    buttons[(index + step + buttons.length) % buttons.length].focus();
+  });
+  for (const id of ['site', 'pastSite', 'editSite', 'editPastSite']) {
+    const select = document.getElementById(id); if (!select) continue;
+    const isPast = id === 'pastSite' || id === 'editPastSite';
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'mobile-site-picker-trigger'; button.id = id + 'PickerButton';
+    button.setAttribute('aria-haspopup', 'dialog'); button.setAttribute('aria-controls', dialog.id); button.setAttribute('aria-expanded', 'false');
+    const value = document.createElement('span'); value.className = 'mobile-site-picker-value';
+    const arrow = document.createElement('span'); arrow.textContent = '⌄'; arrow.setAttribute('aria-hidden', 'true');
+    button.append(value, arrow);
+    // 閉じた選択欄の元の高さ・文字・余白を引き継ぐ。
+    const style = getComputedStyle(select);
+    for (const property of ['height', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'fontSize', 'fontWeight', 'borderRadius']) button.style[property] = style[property];
+    select.insertAdjacentElement('afterend', button);
+    const label = document.querySelector('label[for="' + id + '"]'); if (label) label.htmlFor = button.id;
+    const entry = { select, button, value, title: isPast ? '過去の現場を選択してください' : '現場を選択してください' };
+    entries.set(id, entry); sync(entry);
+    select.classList.add('mobile-site-picker-native'); select.setAttribute('aria-hidden', 'true'); select.tabIndex = -1;
+    button.onclick = () => open(entry);
+    select.addEventListener('change', () => sync(entry));
+    new MutationObserver(() => {
+      sync(entry);
+      if (active === entry && dialog.open) {
+        if (select.disabled) dialog.close(); else render();
+      }
+    }).observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'selected', 'label'] });
+  }
+  window.addEventListener('pagehide', () => { if (dialog.open) dialog.close(); });
+})();
+
+</script>
 </body>
 
 
