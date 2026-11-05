@@ -1,6 +1,6 @@
 {
-  "name": "出勤簿",
-  "short_name": "出勤簿",
+  "name": "現場管理システム",
+  "short_name": "現場管理システム",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f5f5f5",
