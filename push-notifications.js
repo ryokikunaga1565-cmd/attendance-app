@@ -54,6 +54,10 @@ function sdk() {
     const messaging=msg.getMessaging(app.initializeApp(firebaseConfig,'attendance-push'));
     msg.onMessage(messaging,async payload => {
       if (!allowed() || localStorage.getItem(optKey)!=='true') return;
+      // 通知クリックで既存画面が再利用された場合も案内を表示する。
+      if (payload.fcmOptions?.link?.includes('attendanceNotice=deadline')) {
+        window.dispatchEvent(new Event('attendance-deadline-notice'));
+      }
       const registration=await navigator.serviceWorker.getRegistration('./');
       if (registration && payload.notification) await registration.showNotification(payload.notification.title || '現場管理システム',{body:payload.notification.body || '',icon:'./icon.png',tag:'attendance-foreground',data:{FCM_MSG:payload}});
     });
