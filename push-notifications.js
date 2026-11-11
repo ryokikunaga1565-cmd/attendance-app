@@ -12,6 +12,7 @@ invitation.style.cssText='width:min(360px,calc(100% - 32px));box-sizing:border-b
 invitation.innerHTML=`<h2 id="pushInvitationTitle" style="font-size:21px;margin:0 0 12px">締め日のお知らせを受け取る</h2>
 <p style="font-size:16px;line-height:1.6">毎月20日に出勤履歴の確認をお知らせします。</p>
 <p style="font-size:14px;line-height:1.5">次の画面で「許可」を選ぶと、アプリを閉じていても通知が届きます。</p>
+<p style="font-size:14px;line-height:1.5">スマホではホーム画面に追加したアプリから設定してください。</p>
 <p id="pushInvitationStatus" role="status" style="font-size:14px;line-height:1.5"></p>
 <button id="pushInvitationAccept" type="button" style="width:100%;min-height:48px;border:0;border-radius:10px;background:#14523e;color:white;font-size:17px;font-weight:bold">通知を受け取る</button>
 <button id="pushInvitationLater" type="button" style="width:100%;min-height:44px;margin-top:8px;border:1px solid #d6cbb9;border-radius:10px;background:white;font-size:15px">拒否する</button>`;
