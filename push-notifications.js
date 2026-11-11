@@ -14,24 +14,24 @@ invitation.innerHTML=`<h2 id="pushInvitationTitle" style="font-size:21px;margin:
 <p style="font-size:14px;line-height:1.5">次の画面で「許可」を選ぶと、アプリを閉じていても通知が届きます。</p>
 <p id="pushInvitationStatus" role="status" style="font-size:14px;line-height:1.5"></p>
 <button id="pushInvitationAccept" type="button" style="width:100%;min-height:48px;border:0;border-radius:10px;background:#14523e;color:white;font-size:17px;font-weight:bold">通知を受け取る</button>
-<button id="pushInvitationLater" type="button" style="width:100%;min-height:44px;margin-top:8px;border:1px solid #d6cbb9;border-radius:10px;background:white;font-size:15px">あとで</button>`;
+<button id="pushInvitationLater" type="button" style="width:100%;min-height:44px;margin-top:8px;border:1px solid #d6cbb9;border-radius:10px;background:white;font-size:15px">拒否する</button>`;
 document.body.append(invitation);
 const accept = invitation.querySelector('#pushInvitationAccept');
 const later = invitation.querySelector('#pushInvitationLater');
 const invitationStatus = invitation.querySelector('#pushInvitationStatus');
-const snoozeKey = () => 'attendancePushInvitationLater:'+identity().employee;
-function snoozeInvitation() {
-  localStorage.setItem(snoozeKey(),String(Date.now()+24*60*60*1000));
+const rejectionKey = () => 'attendancePushInvitationRejected:'+identity().employee;
+function rejectInvitation() {
+  localStorage.setItem(rejectionKey(),'true');
   invitation.close();
 }
-later.onclick = snoozeInvitation;
-invitation.addEventListener('cancel',event => {event.preventDefault();if (!busy) snoozeInvitation();});
+later.onclick = rejectInvitation;
+invitation.addEventListener('cancel',event => {event.preventDefault();if (!busy) rejectInvitation();});
 function maybeInvite() {
   if (invitationShown || busy || !allowed() || localStorage.getItem(optKey)==='true') return;
   if (!('Notification' in window) || !('serviceWorker' in navigator) || Notification.permission==='denied') return;
   const appleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
   if (appleMobile && !navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) return;
-  if (Number(localStorage.getItem(snoozeKey()) || 0)>Date.now() || typeof invitation.showModal!=='function') return;
+  if (localStorage.getItem(rejectionKey())==='true' || typeof invitation.showModal!=='function') return;
   invitationShown=true;
   invitation.showModal();
 }
