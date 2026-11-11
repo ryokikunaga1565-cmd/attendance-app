@@ -4,6 +4,8 @@ const status = document.getElementById('pushNotificationStatus');
 const enable = document.getElementById('enablePushNotification');
 const disable = document.getElementById('disablePushNotification');
 const optKey = 'attendancePushEnabled';
+const notificationSummary = document.getElementById('pushNotificationSummary');
+let lastEnabledState;
 let busy = false, sdkPromise, refreshed = false;
 let invitationShown = false;
 const invitation = document.createElement('dialog');
@@ -42,7 +44,14 @@ function render() {
   panel.hidden = !allowed();
   enable.disabled = disable.disabled = busy;
   accept.disabled = later.disabled = busy;
-  disable.hidden = localStorage.getItem(optKey) !== 'true';
+  const enabledState = localStorage.getItem(optKey) === 'true';
+  disable.hidden = !enabledState;
+  enable.hidden = enabledState;
+  notificationSummary.textContent = enabledState ? '締め日の通知：有効' : '締め日の通知（テスト）';
+  if (enabledState !== lastEnabledState) {
+    panel.open = !enabledState;
+    lastEnabledState = enabledState;
+  }
   if (!allowed() && invitation.open) invitation.close();
 }
 function sdk() {
