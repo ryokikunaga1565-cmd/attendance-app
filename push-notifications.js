@@ -39,7 +39,7 @@ function maybeInvite() {
   invitation.showModal();
 }
 const identity = () => ({employee:localStorage.getItem('employeeName') || '',deviceId:localStorage.getItem('attendanceDeviceId') || ''});
-function allowed() { return identity().employee === 'テスト' && typeof isDeviceApproved === 'function' && isDeviceApproved(); }
+function allowed() { return !!identity().employee && typeof isDeviceApproved === 'function' && isDeviceApproved(); }
 function render() {
   panel.hidden = !allowed();
   enable.disabled = disable.disabled = busy;
@@ -47,7 +47,7 @@ function render() {
   const enabledState = localStorage.getItem(optKey) === 'true';
   disable.hidden = !enabledState;
   enable.hidden = enabledState;
-  notificationSummary.textContent = enabledState ? '締め日の通知：有効' : '締め日の通知（テスト）';
+  notificationSummary.textContent = enabledState ? '締め日の通知：有効' : '締め日の通知';
   if (enabledState !== lastEnabledState) {
     panel.open = !enabledState;
     lastEnabledState = enabledState;
@@ -93,7 +93,7 @@ async function register() {
   await post(token,true,user);
   localStorage.setItem(optKey,'true');
   localStorage.setItem('attendancePushToken',token);
-  status.textContent = '通知は有効です。現在はテスト社員のみが対象です。';
+  status.textContent = '通知は有効です。毎月20日に出勤履歴の確認をお知らせします。';
   if (invitation.open) invitation.close();
 }
 enable.onclick = async () => {
