@@ -5,12 +5,44 @@ const enable = document.getElementById('enablePushNotification');
 const disable = document.getElementById('disablePushNotification');
 const optKey = 'attendancePushEnabled';
 let busy = false, sdkPromise, refreshed = false;
+let invitationShown = false;
+const invitation = document.createElement('dialog');
+invitation.setAttribute('aria-labelledby','pushInvitationTitle');
+invitation.style.cssText='width:min(360px,calc(100% - 32px));box-sizing:border-box;padding:24px;border:1px solid #d6cbb9;border-radius:16px;background:#faf8f3;color:#30383e;box-shadow:0 12px 40px #0003';
+invitation.innerHTML=`<h2 id="pushInvitationTitle" style="font-size:21px;margin:0 0 12px">締め日のお知らせを受け取る</h2>
+<p style="font-size:16px;line-height:1.6">毎月20日の朝8時ごろ、出勤履歴の確認をお知らせします。</p>
+<p style="font-size:14px;line-height:1.5">次の画面で「許可」を選ぶと、アプリを閉じていても通知が届きます。</p>
+<p id="pushInvitationStatus" role="status" style="font-size:14px;line-height:1.5"></p>
+<button id="pushInvitationAccept" type="button" style="width:100%;min-height:48px;border:0;border-radius:10px;background:#14523e;color:white;font-size:17px;font-weight:bold">通知を受け取る</button>
+<button id="pushInvitationLater" type="button" style="width:100%;min-height:44px;margin-top:8px;border:1px solid #d6cbb9;border-radius:10px;background:white;font-size:15px">あとで</button>`;
+document.body.append(invitation);
+const accept = invitation.querySelector('#pushInvitationAccept');
+const later = invitation.querySelector('#pushInvitationLater');
+const invitationStatus = invitation.querySelector('#pushInvitationStatus');
+const snoozeKey = () => 'attendancePushInvitationLater:'+identity().employee;
+function snoozeInvitation() {
+  localStorage.setItem(snoozeKey(),String(Date.now()+24*60*60*1000));
+  invitation.close();
+}
+later.onclick = snoozeInvitation;
+invitation.addEventListener('cancel',event => {event.preventDefault();if (!busy) snoozeInvitation();});
+function maybeInvite() {
+  if (invitationShown || busy || !allowed() || localStorage.getItem(optKey)==='true') return;
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || Notification.permission==='denied') return;
+  const appleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  if (appleMobile && !navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) return;
+  if (Number(localStorage.getItem(snoozeKey()) || 0)>Date.now() || typeof invitation.showModal!=='function') return;
+  invitationShown=true;
+  invitation.showModal();
+}
 const identity = () => ({employee:localStorage.getItem('employeeName') || '',deviceId:localStorage.getItem('attendanceDeviceId') || ''});
 function allowed() { return identity().employee === 'テスト' && typeof isDeviceApproved === 'function' && isDeviceApproved(); }
 function render() {
   panel.hidden = !allowed();
   enable.disabled = disable.disabled = busy;
+  accept.disabled = later.disabled = busy;
   disable.hidden = localStorage.getItem(optKey) !== 'true';
+  if (!allowed() && invitation.open) invitation.close();
 }
 function sdk() {
   if (!sdkPromise) sdkPromise = Promise.all([
@@ -48,6 +80,7 @@ async function register() {
   localStorage.setItem(optKey,'true');
   localStorage.setItem('attendancePushToken',token);
   status.textContent = '通知は有効です。現在はテスト社員のみが対象です。';
+  if (invitation.open) invitation.close();
 }
 enable.onclick = async () => {
   if (!allowed() || busy) return;
@@ -59,9 +92,14 @@ enable.onclick = async () => {
     if (permission !== 'granted') throw new Error('通知が許可されていません。端末の通知設定を確認してください。');
     status.textContent='通知を登録しています…';
     await register();
-  } catch (error) { status.textContent = error.name === 'AbortError' ? '通信がタイムアウトしました。もう一度お試しください。' : error.message; }
+  } catch (error) {
+    status.textContent = error.name === 'AbortError' ? '通信がタイムアウトしました。もう一度お試しください。' : error.message;
+    invitationStatus.textContent = status.textContent;
+  }
   finally { busy=false; render(); }
 };
+// クリックの同じ処理内で許可を求め、iPhoneのユーザー操作条件を維持する。
+accept.onclick = () => enable.onclick();
 disable.onclick = async () => {
   if (!allowed() || busy) return;
   busy=true; render();
@@ -76,6 +114,7 @@ disable.onclick = async () => {
 // 保存済みの許可がある場合のみ、起動時にトークンを更新する。許可画面は自動表示しない。
 const timer=setInterval(async () => {
   render();
+  maybeInvite();
   if (!refreshed && allowed() && localStorage.getItem(optKey)==='true' && 'Notification' in window && Notification.permission==='granted') {
     refreshed=true;
     try { await register(); } catch (_) { status.textContent='通知設定を更新できませんでした。「通知を有効にする」で再設定できます。'; }
