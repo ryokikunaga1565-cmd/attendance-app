@@ -10,7 +10,7 @@ const invitation = document.createElement('dialog');
 invitation.setAttribute('aria-labelledby','pushInvitationTitle');
 invitation.style.cssText='width:min(360px,calc(100% - 32px));box-sizing:border-box;padding:24px;border:1px solid #d6cbb9;border-radius:16px;background:#faf8f3;color:#30383e;box-shadow:0 12px 40px #0003';
 invitation.innerHTML=`<h2 id="pushInvitationTitle" style="font-size:21px;margin:0 0 12px">締め日のお知らせを受け取る</h2>
-<p style="font-size:16px;line-height:1.6">毎月20日の朝8時ごろ、出勤履歴の確認をお知らせします。</p>
+<p style="font-size:16px;line-height:1.6">毎月20日に出勤履歴の確認をお知らせします。</p>
 <p style="font-size:14px;line-height:1.5">次の画面で「許可」を選ぶと、アプリを閉じていても通知が届きます。</p>
 <p id="pushInvitationStatus" role="status" style="font-size:14px;line-height:1.5"></p>
 <button id="pushInvitationAccept" type="button" style="width:100%;min-height:48px;border:0;border-radius:10px;background:#14523e;color:white;font-size:17px;font-weight:bold">通知を受け取る</button>
